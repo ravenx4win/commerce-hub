@@ -1,0 +1,20 @@
+[
+  { "Id": "p1", "Name": "Appliance Item 1", "Commerce_Hub_Category__r": { "Name": "Appliances" } },
+  { "Id": "p2", "Name": "Audio Item 1", "Commerce_Hub_Category__r": { "Name": "Audio" } },
+  { "Id": "p3", "Name": "Automotive Item 1", "Commerce_Hub_Category__r": { "Name": "Automotive" } },
+  { "Id": "p4", "Name": "Beauty Item 1", "Commerce_Hub_Category__r": { "Name": "Beauty" } },
+  { "Id": "p5", "Name": "Book Item 1", "Commerce_Hub_Category__r": { "Name": "Books" } },
+  { "Id": "p6", "Name": "Clothing Item 1", "Commerce_Hub_Category__r": { "Name": "Clothing" } },
+  { "Id": "p7", "Name": "Electronics Item 1", "Commerce_Hub_Category__r": { "Name": "Electronics" } },
+  { "Id": "p8", "Name": "Food Item 1", "Commerce_Hub_Category__r": { "Name": "Food & Grocery" } },
+  { "Id": "p9", "Name": "Furniture Item 1", "Commerce_Hub_Category__r": { "Name": "Furniture" } },
+  { "Id": "p10", "Name": "Home Item 1", "Commerce_Hub_Category__r": { "Name": "Home" } },
+  { "Id": "p11", "Name": "Kitchen Item 1", "Commerce_Hub_Category__r": { "Name": "Kitchen & Dining" } },
+  { "Id": "p12", "Name": "Laptop Item 1", "Commerce_Hub_Category__r": { "Name": "Laptops & Computers" } },
+  { "Id": "p13", "Name": "Mobile Item 1", "Commerce_Hub_Category__r": { "Name": "Mobiles" } },
+  { "Id": "p14", "Name": "Personal Care Item 1", "Commerce_Hub_Category__r": { "Name": "Personal Care" } },
+  { "Id": "p15", "Name": "Sports Item 1", "Commerce_Hub_Category__r": { "Name": "Sports & Fitness" } },
+  { "Id": "p16", "Name": "Toy Item 1", "Commerce_Hub_Category__r": { "Name": "Toys & Games" } },
+  { "Id": "p17", "Name": "Luggage Item 1", "Commerce_Hub_Category__r": { "Name": "Travel & Luggage" } },
+  { "Id": "p18", "Name": "Watch Item 1", "Commerce_Hub_Category__r": { "Name": "Watches & Accessories" } }
+]

@@ -1,0 +1,1 @@
+delete [SELECT Id FROM Category__c WHERE Id IN ('a04dL00000LE8RZQA1')];

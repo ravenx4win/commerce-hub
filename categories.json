@@ -1,0 +1,40 @@
+{
+  "status": 0,
+  "result": {
+    "records": [
+      {
+        "attributes": {
+          "type": "Category__c",
+          "url": "/services/data/v67.0/sobjects/Category__c/a04dL00000L8bBBQAZ"
+        },
+        "Id": "a04dL00000L8bBBQAZ",
+        "Name": "Electronics",
+        "Active__c": true,
+        "Description__c": "Electronic devices and accessories"
+      },
+      {
+        "attributes": {
+          "type": "Category__c",
+          "url": "/services/data/v67.0/sobjects/Category__c/a04dL00000L8bCnQAJ"
+        },
+        "Id": "a04dL00000L8bCnQAJ",
+        "Name": "Clothing",
+        "Active__c": true,
+        "Description__c": "Clothing and fashion products"
+      },
+      {
+        "attributes": {
+          "type": "Category__c",
+          "url": "/services/data/v67.0/sobjects/Category__c/a04dL00000L8bEPQAZ"
+        },
+        "Id": "a04dL00000L8bEPQAZ",
+        "Name": "Books",
+        "Active__c": true,
+        "Description__c": "Books and educational material"
+      }
+    ],
+    "totalSize": 3,
+    "done": true
+  },
+  "warnings": []
+}

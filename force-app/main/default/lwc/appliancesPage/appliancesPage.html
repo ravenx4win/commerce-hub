@@ -1,0 +1,218 @@
+<template>
+    <div class="appliances-container">
+
+        <!-- Breadcrumb Navigation -->
+        <nav class="breadcrumb-nav" aria-label="Breadcrumb">
+            <button class="breadcrumb-link" onclick={handleHomeClick}>Home</button>
+            <span class="breadcrumb-sep" aria-hidden="true">/</span>
+            <span>Categories</span>
+            <span class="breadcrumb-sep" aria-hidden="true">/</span>
+            <span class="breadcrumb-current" aria-current="page">Appliances</span>
+        </nav>
+
+        <!-- Hero Header -->
+        <header class="appliances-hero">
+            <div class="hero-pattern" aria-hidden="true"></div>
+            <div class="hero-content">
+                <div class="hero-badge-wrap">
+                    <span>⚡ Commerce Hub Official Store</span>
+                </div>
+                <h1 class="hero-title">Home & Kitchen Appliances</h1>
+                <p class="hero-subtitle">
+                    Upgrade your everyday living with energy-efficient kitchen essentials, smart climate gear, and modern cleaning technology.
+                </p>
+                <div class="hero-highlights">
+                    <div class="highlight-item">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                        <span>1-Year Official Warranty</span>
+                    </div>
+                    <div class="highlight-item">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="1" y="3" width="15" height="13"/>
+                            <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+                            <circle cx="5.5" cy="18.5" r="2.5"/>
+                            <circle cx="18.5" cy="18.5" r="2.5"/>
+                        </svg>
+                        <span>Fast Doorstep Delivery</span>
+                    </div>
+                    <div class="highlight-item">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="23 4 23 10 17 10"/>
+                            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                        </svg>
+                        <span>7-Day Easy Returns</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visual Icon Badge Matching User Screenshot -->
+            <div class="hero-icon-card" aria-hidden="true">
+                <div class="hero-icon-circle">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hero-svg-icon">
+                        <rect x="4" y="2" width="16" height="20" rx="2"></rect>
+                        <circle cx="12" cy="13" r="4"></circle>
+                        <circle cx="8" cy="6" r="1"></circle>
+                    </svg>
+                </div>
+            </div>
+        </header>
+
+        <!-- Filter, Search, and Sort Control Bar -->
+        <section class="control-bar" aria-label="Catalog filters">
+            <div class="filter-pills" role="tablist" aria-label="Subcategory filters">
+                <template for:each={filterPills} for:item="pill">
+                    <button
+                        key={pill.value}
+                        class={pill.activeClass}
+                        role="tab"
+                        aria-selected={pill.active}
+                        data-filter={pill.value}
+                        onclick={handleFilterClick}
+                    >
+                        {pill.label}
+                    </button>
+                </template>
+            </div>
+
+            <div class="search-sort-group">
+                <div class="search-box">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    <input
+                        type="text"
+                        class="search-input"
+                        placeholder="Search appliances..."
+                        value={_searchTerm}
+                        oninput={handleSearchInput}
+                        aria-label="Filter appliances by name or code"
+                    />
+                </div>
+
+                <select class="sort-select" onchange={handleSortChange} aria-label="Sort products">
+                    <option value="featured">Sort by: Featured</option>
+                    <option value="price-low">Price: Low to High</option>
+                    <option value="price-high">Price: High to Low</option>
+                    <option value="rating">Highest Rated</option>
+                    <option value="name-asc">Name: A to Z</option>
+                </select>
+            </div>
+        </section>
+
+        <!-- Results Header -->
+        <div class="results-meta">
+            <span class="results-count">
+                Showing <strong>{totalCount}</strong> appliance products
+            </span>
+        </div>
+
+        <!-- Products Grid -->
+        <template if:true={hasProducts}>
+            <div class="products-grid">
+                <template for:each={displayedProducts} for:item="prod">
+                    <article
+                        key={prod.id}
+                        class="product-card"
+                        data-id={prod.id}
+                        onclick={handleProductClick}
+                    >
+                        <!-- Badge Tag -->
+                        <template if:true={prod.badge}>
+                            <span class={prod.badgeClass}>{prod.badge}</span>
+                        </template>
+
+                        <!-- Product Preview Graphic -->
+                        <div class="card-img-wrap" aria-hidden="true">
+                            <svg viewBox="0 0 100 100" class="card-appliance-svg">
+                                <rect width="100" height="100" rx="16" fill="#f0fdfa"/>
+                                <rect x="24" y="14" width="52" height="72" rx="8" fill="#0d9488"/>
+                                <line x1="24" y1="44" x2="76" y2="44" stroke="#0f766e" stroke-width="3"/>
+                                <circle cx="64" cy="30" r="4" fill="#5eead4"/>
+                                <circle cx="50" cy="65" r="14" fill="#134e4a"/>
+                                <circle cx="50" cy="65" r="8" fill="#5eead4"/>
+                            </svg>
+                        </div>
+
+                        <!-- Product Body -->
+                        <div class="card-body">
+                            <span class="card-category">{prod.subCategory} • {prod.productCode}</span>
+                            <h2 class="card-title">{prod.name}</h2>
+                            <p class="card-desc">{prod.description}</p>
+
+                            <!-- Rating Row -->
+                            <div class="rating-row">
+                                <div class="stars-wrap">
+                                    <svg viewBox="0 0 24 24" class="star-icon">
+                                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                                    </svg>
+                                    <span>{prod.rating}</span>
+                                </div>
+                                <span class="rating-count">({prod.ratingCount} reviews)</span>
+                            </div>
+
+                            <!-- Pricing -->
+                            <div class="price-row">
+                                <span class="curr-price">{prod.formattedPrice}</span>
+                                <span class="orig-price">{prod.formattedOriginalPrice}</span>
+                                <span class="discount-pill">{prod.discount}</span>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="card-actions">
+                                <button
+                                    class="btn-details"
+                                    data-id={prod.id}
+                                    onclick={handleProductClick}
+                                    aria-label="View product details"
+                                >
+                                    Details
+                                </button>
+                                <button
+                                    class="btn-add-cart"
+                                    data-id={prod.id}
+                                    onclick={handleAddToCart}
+                                    aria-label="Add item to cart"
+                                >
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="9" cy="21" r="1"/>
+                                        <circle cx="20" cy="21" r="1"/>
+                                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                                    </svg>
+                                    <span>Add</span>
+                                </button>
+                            </div>
+                        </div>
+                    </article>
+                </template>
+            </div>
+        </template>
+
+        <!-- Empty State -->
+        <template if:false={hasProducts}>
+            <div class="empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="empty-icon">
+                    <circle cx="11" cy="11" r="8"/>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <h3 class="empty-title">No appliances found</h3>
+                <p class="empty-desc">We couldn't find any appliances matching your current filter or search criteria.</p>
+                <button class="btn-reset" onclick={handleResetFilters}>Reset Filters</button>
+            </div>
+        </template>
+
+        <!-- Feedback Toast -->
+        <template if:true={_showToast}>
+            <div class="toast-notice" role="status" aria-live="polite">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="toast-check">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                <span>{toastMessage}</span>
+            </div>
+        </template>
+
+    </div>
+</template>

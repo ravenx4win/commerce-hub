@@ -1,0 +1,38 @@
+{
+  "status": 0,
+  "result": {
+    "records": [
+      {
+        "attributes": {
+          "type": "ProductVariant__c",
+          "url": "/services/data/v67.0/sobjects/ProductVariant__c/a05dL00001rMUV3QAO"
+        },
+        "Id": "a05dL00001rMUV3QAO",
+        "Name": "Galaxy S25 - 256GB - Black",
+        "Product__c": "01tdL00000gcLZVQA2",
+        "SKU__c": "S25-256-BLK",
+        "Price__c": 74999,
+        "Color__c": "Black",
+        "Size__c": "256GB",
+        "Active__c": true
+      },
+      {
+        "attributes": {
+          "type": "ProductVariant__c",
+          "url": "/services/data/v67.0/sobjects/ProductVariant__c/a05dL00001rMVEDQA4"
+        },
+        "Id": "a05dL00001rMVEDQA4",
+        "Name": "Galaxy S25 - 256GB - Blue",
+        "Product__c": "01tdL00000gcLZVQA2",
+        "SKU__c": "S25-256-BLU",
+        "Price__c": 75999,
+        "Color__c": "Blue",
+        "Size__c": "256GB",
+        "Active__c": true
+      }
+    ],
+    "totalSize": 2,
+    "done": true
+  },
+  "warnings": []
+}

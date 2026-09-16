@@ -1,0 +1,22 @@
+{
+  "status": 0,
+  "result": {
+    "records": [
+      {
+        "attributes": {
+          "type": "Product2",
+          "url": "/services/data/v67.0/sobjects/Product2/01tdL00000gcLZVQA2"
+        },
+        "Id": "01tdL00000gcLZVQA2",
+        "Name": "Samsung Galaxy S25",
+        "ProductCode": "PROD-S25",
+        "Description": "Samsung Galaxy S25 smartphone for Commerce Hub.",
+        "IsActive": true,
+        "Commerce_Hub_Category__c": "a04dL00000L8bBBQAZ"
+      }
+    ],
+    "totalSize": 1,
+    "done": true
+  },
+  "warnings": []
+}

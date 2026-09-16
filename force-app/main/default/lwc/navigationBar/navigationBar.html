@@ -1,0 +1,758 @@
+<template>
+    <div class="storefront-header">
+        <div class="header-inner">
+
+            <!-- Row 1: Brand — truly centered via CSS grid -->
+            <div class="brand-row">
+                <div class="brand-spacer" role="presentation"></div>
+
+                <button
+                    class="brand-btn"
+                    onclick={handleBrandClick}
+                    aria-label="Commerce Hub — go to home"
+                >
+                    <span class="brand-mark" aria-hidden="true"></span>
+                    <span class="brand-name">Commerce Hub</span>
+                </button>
+
+                <div class="brand-spacer" role="presentation"></div>
+            </div>
+
+            <!-- Row 2: Search + Login + Cart -->
+            <div class="action-row">
+
+                <!-- Search -->
+                <div class="search-wrapper">
+                    <div class="search-bar">
+                        <svg
+                            class="search-icon"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            aria-hidden="true"
+                        >
+                            <circle cx="11" cy="11" r="7" />
+                            <path d="m21 21-4.3-4.3" />
+                        </svg>
+                        <input
+                            type="text"
+                            class="search-input"
+                            placeholder="Search for products, brands and more"
+                            oninput={handleSearchInput}
+                            onfocus={handleSearchFocus}
+                            onblur={handleSearchBlur}
+                            aria-label="Search for products, brands and more"
+                            aria-haspopup="listbox"
+                            aria-expanded={dropdownExpanded}
+                            aria-autocomplete="list"
+                            autocomplete="off"
+                        />
+                    </div>
+
+                    <!-- Search results dropdown -->
+                    <template if:true={_dropdownActive}>
+                        <div class="search-dropdown" role="listbox" aria-label="Search suggestions">
+                            <template if:true={hasSearchResults}>
+                                <template for:each={_searchResults} for:item="result">
+                                    <button
+                                        key={result.id}
+                                        class="result-item"
+                                        role="option"
+                                        data-id={result.id}
+                                        onmousedown={preventBlur}
+                                        onclick={handleResultClick}
+                                    >
+                                        <span class="result-name">{result.name}</span>
+                                        <template if:true={result.category}>
+                                            <span class="result-cat">in {result.category}</span>
+                                        </template>
+                                    </button>
+                                </template>
+                            </template>
+                            <template if:true={showNoResults}>
+                                <p class="no-results-msg">No products found</p>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Utilities (Location over Login/Cart) -->
+                <div class="header-utilities-wrapper">
+                    <button 
+                        class="header-location-btn" 
+                        onclick={openLocationDrawer}
+                        aria-label="Select delivery location"
+                    >
+                        <svg class="location-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                            <circle cx="12" cy="10" r="3"></circle>
+                        </svg>
+                        <div class="location-text-group">
+                            <span class="location-label">Deliver to</span>
+                            <span class="location-value">{displayedDeliveryLocation}</span>
+                        </div>
+                    </button>
+
+                    <div class="action-buttons-group">
+                        <!-- Login -->
+                        <button
+                            class="action-btn"
+                            onclick={handleLoginClick}
+                            aria-label="Login to your account"
+                        >
+                            <svg
+                                class="btn-icon"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                aria-hidden="true"
+                            >
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                <circle cx="12" cy="7" r="4" />
+                            </svg>
+                            <span>Login</span>
+                        </button>
+
+                        <!-- Cart -->
+                        <button
+                            class="action-btn cart-btn"
+                            onclick={handleCartClick}
+                            aria-label={cartAriaLabel}
+                        >
+                            <svg
+                                class="btn-icon"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                aria-hidden="true"
+                            >
+                                <circle cx="9" cy="21" r="1" />
+                                <circle cx="20" cy="21" r="1" />
+                                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                            </svg>
+                            <span>Cart</span>
+                            <template if:true={hasCartItems}>
+                                <span class="cart-badge" aria-hidden="true">{_cartCount}</span>
+                            </template>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 3: Category navigation -->
+        <div class="category-nav-wrapper" onmouseleave={closeCategoryDropdownDelay}>
+            <nav class="category-nav" aria-label="Product categories">
+                <div class="category-inner">
+                    <button 
+                        class="pagination-btn" 
+                        onclick={handlePrevPage} 
+                        disabled={isPrevDisabled}
+                        aria-label="Previous categories"
+                    >
+                        &lt;&lt; Previous
+                    </button>
+
+                    <div class="category-items">
+                        <template for:each={_paginatedCategories} for:item="cat">
+                            <button
+                                key={cat.key}
+                                class="category-btn"
+                                onmouseenter={handleCategoryHover}
+                                onfocus={handleCategoryHover}
+                                onclick={handleCategoryClick}
+                                data-category={cat.name}
+                                aria-expanded={isCategoryExpanded}
+                            >
+                                <div class="category-icon-wrapper" aria-hidden="true">
+                                    <template if:true={cat.isLaptops}>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="cat-svg">
+                                            <rect x="2" y="3" width="20" height="13" rx="2" ry="2"></rect>
+                                            <line x1="8" y1="20" x2="16" y2="20"></line>
+                                            <line x1="12" y1="16" x2="12" y2="20"></line>
+                                        </svg>
+                                    </template>
+                                    <template if:true={cat.isSports}>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="cat-svg">
+                                            <path d="M18 2l-3.5 3.5m0 0L6.5 13.5a2 2 0 0 0-.5 1.5l.5 3a2 2 0 0 0 2 2l3-.5a2 2 0 0 0 1.5-.5L21 11.5z"></path>
+                                            <line x1="16" y1="4" x2="18.5" y2="6.5"></line>
+                                            <circle cx="5" cy="5" r="2" fill="currentColor"></circle>
+                                        </svg>
+                                    </template>
+                                    <template if:true={cat.isWatches}>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="cat-svg">
+                                            <circle cx="12" cy="12" r="5.5"></circle>
+                                            <polyline points="12 9.5 12 12 14 13.5"></polyline>
+                                            <path d="M9.5 6.5V2.5h5v4"></path>
+                                            <path d="M9.5 17.5v4h5v-4"></path>
+                                        </svg>
+                                    </template>
+                                    <template if:true={cat.isTravel}>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="cat-svg">
+                                            <rect x="5" y="7" width="14" height="12" rx="2"></rect>
+                                            <path d="M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3"></path>
+                                            <line x1="9" y1="11" x2="9" y2="15"></line>
+                                            <line x1="15" y1="11" x2="15" y2="15"></line>
+                                            <circle cx="7.5" cy="20.5" r="1.2" fill="currentColor"></circle>
+                                            <circle cx="16.5" cy="20.5" r="1.2" fill="currentColor"></circle>
+                                        </svg>
+                                    </template>
+                                    <template if:true={cat.isElectronics}>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="cat-svg">
+                                            <rect x="2" y="4" width="20" height="12" rx="2"></rect>
+                                            <line x1="6" y1="20" x2="18" y2="20"></line>
+                                            <line x1="12" y1="16" x2="12" y2="20"></line>
+                                        </svg>
+                                    </template>
+                                    <template if:true={cat.isClothing}>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="cat-svg">
+                                            <path d="M6 2L2 7l4 2v12h12V9l4-2-4-5-4 2-4-2z"></path>
+                                        </svg>
+                                    </template>
+                                    <template if:true={cat.isBooks}>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="cat-svg">
+                                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20v-14H6.5A2.5 2.5 0 0 0 4 5.5v14z"></path>
+                                            <path d="M6.5 17H20v3H6.5A2.5 2.5 0 0 1 4 17.5"></path>
+                                        </svg>
+                                    </template>
+                                    <template if:true={cat.isMobiles}>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="cat-svg">
+                                            <rect x="6" y="2" width="12" height="20" rx="2"></rect>
+                                            <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                                        </svg>
+                                    </template>
+                                    <template if:true={cat.isBeauty}>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="cat-svg">
+                                            <path d="M12 2l2.5 6.5L21 11l-5 4.5 1.5 6.5-5.5-3.5L6.5 22 8 15.5 3 11l6.5-2.5z"></path>
+                                        </svg>
+                                    </template>
+                                    <template if:true={cat.isHome}>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="cat-svg">
+                                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                                        </svg>
+                                    </template>
+                                    <template if:true={cat.isAppliances}>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="cat-svg">
+                                            <rect x="4" y="2" width="16" height="20" rx="2"></rect>
+                                            <circle cx="12" cy="13" r="4"></circle>
+                                            <circle cx="8" cy="6" r="1"></circle>
+                                        </svg>
+                                    </template>
+                                    <template if:true={cat.isToys}>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="cat-svg">
+                                            <rect x="2" y="6" width="20" height="12" rx="6"></rect>
+                                            <circle cx="8" cy="12" r="1" fill="currentColor"></circle>
+                                            <path d="M15 11h2M16 10v2"></path>
+                                        </svg>
+                                    </template>
+                                    <template if:true={cat.isFood}>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="cat-svg">
+                                            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                                            <path d="M16 10a4 4 0 0 1-8 0"></path>
+                                        </svg>
+                                    </template>
+                                    <template if:true={cat.isFurniture}>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="cat-svg">
+                                            <path d="M5 4v16M19 4v16M5 12h14M8 12V7a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v5"></path>
+                                        </svg>
+                                    </template>
+                                    <template if:true={cat.isAudio}>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="cat-svg">
+                                            <path d="M3 18v-6a9 9 0 0 1 18 0v6"></path>
+                                            <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path>
+                                        </svg>
+                                    </template>
+                                    <template if:true={cat.isPersonalCare}>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="cat-svg">
+                                            <circle cx="12" cy="7" r="4"></circle>
+                                            <path d="M5.5 21a8.38 8.38 0 0 1 13 0"></path>
+                                        </svg>
+                                    </template>
+                                    <template if:true={cat.isKitchen}>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="cat-svg">
+                                            <path d="M18 2v20M18 2a3 3 0 0 0-3 3v7h3M6 2v6a3 3 0 0 0 6 0V2M9 8v14"></path>
+                                        </svg>
+                                    </template>
+                                </div>
+                                <span class="category-name">{cat.name}</span>
+                            </button>
+                        </template>
+                    </div>
+
+                    <button 
+                        class="pagination-btn" 
+                        onclick={handleNextPage} 
+                        disabled={isNextDisabled}
+                        aria-label="Next categories"
+                    >
+                        Next &gt;&gt;
+                    </button>
+                </div>
+            </nav>
+
+            <!-- Category Dropdown -->
+            <template if:true={_categoryDropdownActive}>
+                <div class="category-dropdown-panel" onmouseenter={keepCategoryDropdownOpen} onmouseleave={closeCategoryDropdownDelay}>
+                    <div class="dropdown-inner">
+                        <div class="dropdown-header">
+                            <h3 class="dropdown-title">{_hoveredCategory}</h3>
+                        </div>
+                        <div class="dropdown-grid">
+                            <template for:each={_dropdownProducts} for:item="prod">
+                                <button
+                                    key={prod.Id}
+                                    class="dropdown-product-card"
+                                    data-id={prod.Id}
+                                    onclick={handleDropdownProductClick}
+                                >
+                                    <div class="prod-img-wrapper">
+                                        <img src={prod.imageUrl} alt={prod.Name} class="prod-img" onerror={handleProductImageError} data-id={prod.Id} loading="lazy" />
+                                    </div>
+                                    <div class="prod-info">
+                                        <span class="prod-name">{prod.Name}</span>
+                                        <template if:true={prod.displayPrice}>
+                                            <span class="prod-price">{prod.displayPrice}</span>
+                                        </template>
+                                        <span class="prod-desc">{prod.variantSummary}</span>
+                                    </div>
+                                </button>
+                            </template>
+                        </div>
+                        <div class="dropdown-footer">
+                            <button class="view-all-btn" onclick={handleViewAllCategory} aria-label={viewAllAriaLabel}>
+                                {viewAllButtonText}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <!-- Row 4: Ganesh Chaturthi Promotional Banner -->
+        <div class="promo-banner-section">
+            <div class="promo-banner-inner">
+                <div class="promo-content">
+                    <span class="promo-badge">Festive Offer</span>
+                    <h2 class="promo-headline">Ganesh Chaturthi</h2>
+                    <div class="promo-offer">Up to 40% Off</div>
+                    <p class="promo-subtext">Celebrating Ganesh Chaturthi</p>
+                </div>
+                <div class="promo-visual">
+                    <div class="ganesha-art-wrapper" aria-label="Lord Ganesha Festive Banner Artwork">
+                        <img src={ganeshBannerUrl} alt="Lord Ganesha Festive Banner" class="ganesha-banner-img" onerror={handleBannerImageError} />
+                    </div>
+                </div>
+            </div>
+            <div class="promo-banner-subtext-bar">
+                Upto 40% off - Starts from 18th September 2026 to 20th September 2026, Hurry Up!!
+            </div>
+        </div>
+
+        <!-- Section A: Trust / Service Strip -->
+        <div class="storefront-trust-strip">
+            <div class="trust-strip-inner">
+                <div class="trust-item">
+                    <div class="trust-icon-box">
+                        <svg viewBox="0 0 24 24" class="trust-svg"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-1.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM17 9.5h2.5l1.96 2.5H17V9.5z" fill="#2563eb"/></svg>
+                    </div>
+                    <div class="trust-text">
+                        <span class="trust-title">FREE SHIPPING</span>
+                        <span class="trust-sub">On orders above ₹1,000</span>
+                    </div>
+                </div>
+                <div class="trust-divider"></div>
+                <div class="trust-item">
+                    <div class="trust-icon-box">
+                        <svg viewBox="0 0 24 24" class="trust-svg"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z" fill="#2563eb"/></svg>
+                    </div>
+                    <div class="trust-text">
+                        <span class="trust-title">SECURE PAYMENTS</span>
+                        <span class="trust-sub">Safe & protected checkout</span>
+                    </div>
+                </div>
+                <div class="trust-divider"></div>
+                <div class="trust-item">
+                    <div class="trust-icon-box">
+                        <svg viewBox="0 0 24 24" class="trust-svg"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" fill="#2563eb"/></svg>
+                    </div>
+                    <div class="trust-text">
+                        <span class="trust-title">EASY RETURNS</span>
+                        <span class="trust-sub">Simple return experience</span>
+                    </div>
+                </div>
+                <div class="trust-divider"></div>
+                <div class="trust-item">
+                    <div class="trust-icon-box">
+                        <svg viewBox="0 0 24 24" class="trust-svg"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" fill="#2563eb"/></svg>
+                    </div>
+                    <div class="trust-text">
+                        <span class="trust-title">QUALITY PRODUCTS</span>
+                        <span class="trust-sub">Curated across categories</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section B: Shop by Category -->
+        <div class="storefront-section shop-by-category-section">
+            <div class="storefront-container">
+                <div class="section-header">
+                    <h2 class="section-title">Shop by Category</h2>
+                    <span class="section-subtitle">Explore top categories from our catalog</span>
+                </div>
+                <div class="category-grid">
+                    <template for:each={storefrontCategories} for:item="cat">
+                        <div key={cat.name} class="category-card" onclick={handleCategoryCardClick} data-category={cat.name}>
+                            <div class="category-card-icon-wrap">
+                                <template if:true={cat.isElectronics}>
+                                    <svg viewBox="0 0 100 100" class="cat-card-svg"><rect width="100" height="100" rx="16" fill="#f8fafc"/><rect x="20" y="30" width="60" height="45" rx="8" fill="#1e293b"/><circle cx="50" cy="52" r="16" fill="#475569" stroke="#94a3b8" stroke-width="3"/><circle cx="50" cy="52" r="8" fill="#3b82f6"/><rect x="32" y="22" width="16" height="8" rx="2" fill="#64748b"/></svg>
+                                </template>
+                                <template if:true={cat.isClothing}>
+                                    <svg viewBox="0 0 100 100" class="cat-card-svg"><rect width="100" height="100" rx="16" fill="#fdf2f8"/><path d="M30 20L40 10H60L70 20L85 30L75 45L65 38V85H35V38L25 45L15 30L30 20Z" fill="#ec4899"/><path d="M40 10C40 18 60 18 60 10" fill="none" stroke="#be185d" stroke-width="3"/></svg>
+                                </template>
+                                <template if:true={cat.isBooks}>
+                                    <svg viewBox="0 0 100 100" class="cat-card-svg"><rect width="100" height="100" rx="16" fill="#f0fdf4"/><path d="M20 25C20 25 35 20 50 25C65 20 80 25 80 25V80C80 80 65 75 50 80C35 75 20 80 20 80V25Z" fill="#22c55e"/><line x1="50" y1="25" x2="50" y2="80" stroke="#15803d" stroke-width="3"/></svg>
+                                </template>
+                                <template if:true={cat.isMobiles}>
+                                    <svg viewBox="0 0 100 100" class="cat-card-svg"><rect width="100" height="100" rx="16" fill="#f8fafc"/><rect x="28" y="12" width="44" height="76" rx="8" fill="#0f172a"/><rect x="32" y="16" width="36" height="68" rx="4" fill="#3b82f6"/><circle cx="50" cy="20" r="2" fill="#ffffff"/></svg>
+                                </template>
+                                <template if:true={cat.isBeauty}>
+                                    <svg viewBox="0 0 100 100" class="cat-card-svg"><rect width="100" height="100" rx="16" fill="#fff1f2"/><path d="M35 40h30v40H35z" fill="#f43f5e"/><rect x="42" y="15" width="16" height="25" rx="4" fill="#fb7185"/><ellipse cx="50" cy="40" rx="15" ry="4" fill="#e11d48"/></svg>
+                                </template>
+                                <template if:true={cat.isHome}>
+                                    <svg viewBox="0 0 100 100" class="cat-card-svg"><rect width="100" height="100" rx="16" fill="#faf5ff"/><path d="M30 45l20-25 20 25H30z" fill="#a855f7"/><rect x="46" y="45" width="8" height="32" fill="#7e22ce"/><rect x="38" y="77" width="24" height="6" rx="3" fill="#6b21a8"/><circle cx="50" cy="38" r="6" fill="#fef08a"/></svg>
+                                </template>
+                                <template if:true={cat.isAppliances}>
+                                    <svg viewBox="0 0 100 100" class="cat-card-svg"><rect width="100" height="100" rx="16" fill="#f0fdfa"/><rect x="25" y="15" width="50" height="70" rx="8" fill="#0d9488"/><line x1="25" y1="45" x2="75" y2="45" stroke="#0f766e" stroke-width="3"/><circle cx="65" cy="30" r="4" fill="#5eead4"/><circle cx="65" cy="65" r="8" fill="#5eead4"/></svg>
+                                </template>
+                                <template if:true={cat.isToys}>
+                                    <svg viewBox="0 0 100 100" class="cat-card-svg"><rect width="100" height="100" rx="16" fill="#eff6ff"/><rect x="20" y="35" width="60" height="30" rx="6" fill="#3b82f6"/><circle cx="35" cy="65" r="10" fill="#1e293b"/><circle cx="65" cy="65" r="10" fill="#1e293b"/><rect x="30" y="25" width="25" height="12" fill="#93c5fd"/></svg>
+                                </template>
+                                <template if:true={cat.isFood}>
+                                    <svg viewBox="0 0 100 100" class="cat-card-svg"><rect width="100" height="100" rx="16" fill="#fefce8"/><rect x="30" y="25" width="40" height="55" rx="8" fill="#eab308"/><path d="M40 25V16a4 4 0 0 1 4-4h12a4 4 0 0 1 4 4v9" fill="none" stroke="#ca8a04" stroke-width="3"/><circle cx="50" cy="52" r="12" fill="#fef08a"/><path d="M46 52l3 3 5-6" stroke="#854d0e" stroke-width="3" fill="none" stroke-linecap="round"/></svg>
+                                </template>
+                                <template if:true={cat.isSports}>
+                                    <svg viewBox="0 0 100 100" class="cat-card-svg"><rect width="100" height="100" rx="16" fill="#fef3c7"/><path d="M68 16l-10 10m0 0L32 52a6 6 0 0 0-1.5 4.5l1.5 14a6 6 0 0 0 6 6l14-1.5a6 6 0 0 0 4.5-1.5L84 48z" fill="#d97706" stroke="#b45309" stroke-width="3"/><line x1="62" y1="22" x2="72" y2="32" stroke="#ea580c" stroke-width="4"/><circle cx="24" cy="24" r="8" fill="#dc2626"/></svg>
+                                </template>
+                                <template if:true={cat.isFurniture}>
+                                    <svg viewBox="0 0 100 100" class="cat-card-svg"><rect width="100" height="100" rx="16" fill="#fffbe7"/><path d="M25 35h50v20H25z" fill="#b45309"/><rect x="30" y="55" width="8" height="30" fill="#78350f"/><rect x="62" y="55" width="8" height="30" fill="#78350f"/><rect x="20" y="30" width="60" height="8" rx="2" fill="#d97706"/></svg>
+                                </template>
+                                <template if:true={cat.isLaptops}>
+                                    <svg viewBox="0 0 100 100" class="cat-card-svg"><rect width="100" height="100" rx="16" fill="#f8fafc"/><rect x="22" y="20" width="56" height="40" rx="4" fill="#334155"/><rect x="26" y="24" width="48" height="32" fill="#3b82f6"/><path d="M12 64h76v6a2 2 0 0 1-2 2H14a2 2 0 0 1-2-2v-6z" fill="#94a3b8"/><rect x="44" y="66" width="12" height="2" rx="1" fill="#64748b"/></svg>
+                                </template>
+                                <template if:true={cat.isAudio}>
+                                    <svg viewBox="0 0 100 100" class="cat-card-svg"><rect width="100" height="100" rx="16" fill="#f1f5f9"/><path d="M30 40a20 20 0 0 1 40 0v25H30V40z" fill="none" stroke="#2563eb" stroke-width="6"/><rect x="20" y="50" width="14" height="25" rx="4" fill="#1d4ed8"/><rect x="66" y="50" width="14" height="25" rx="4" fill="#1d4ed8"/></svg>
+                                </template>
+                                <template if:true={cat.isTravel}>
+                                    <svg viewBox="0 0 100 100" class="cat-card-svg"><rect width="100" height="100" rx="16" fill="#f0f9ff"/><rect x="25" y="30" width="50" height="55" rx="8" fill="#0284c7"/><path d="M40 30V18a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v12" fill="none" stroke="#0369a1" stroke-width="4"/><line x1="40" y1="45" x2="40" y2="70" stroke="#38bdf8" stroke-width="3"/><line x1="60" y1="45" x2="60" y2="70" stroke="#38bdf8" stroke-width="3"/><circle cx="35" cy="88" r="4" fill="#1e293b"/><circle cx="65" cy="88" r="4" fill="#1e293b"/></svg>
+                                </template>
+                                <template if:true={cat.isWatches}>
+                                    <svg viewBox="0 0 100 100" class="cat-card-svg"><rect width="100" height="100" rx="16" fill="#f8fafc"/><rect x="42" y="10" width="16" height="80" rx="4" fill="#334155"/><circle cx="50" cy="50" r="24" fill="#ffffff" stroke="#2563eb" stroke-width="4"/><circle cx="50" cy="50" r="20" fill="#f1f5f9"/><polyline points="50 36 50 50 60 56" fill="none" stroke="#1e3a8a" stroke-width="3" stroke-linecap="round"/></svg>
+                                </template>
+                                <template if:true={cat.isPersonalCare}>
+                                    <svg viewBox="0 0 100 100" class="cat-card-svg"><rect width="100" height="100" rx="16" fill="#ecfeff"/><rect x="40" y="15" width="20" height="70" rx="6" fill="#0891b2"/><rect x="44" y="22" width="12" height="12" rx="2" fill="#06b6d4"/><circle cx="50" cy="48" r="4" fill="#cffaff"/></svg>
+                                </template>
+                                <template if:true={cat.isKitchen}>
+                                    <svg viewBox="0 0 100 100" class="cat-card-svg"><rect width="100" height="100" rx="16" fill="#f0fdfa"/><ellipse cx="50" cy="55" rx="30" ry="18" fill="#0d9488"/><path d="M20 55v10c0 10 13 18 30 18s30-8 30-18V55" fill="#0f766e"/><path d="M75 50l15-5" stroke="#115e59" stroke-width="5" stroke-linecap="round"/></svg>
+                                </template>
+                            </div>
+                            <span class="category-card-name">{cat.name}</span>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section C: Trending Products -->
+        <div class="storefront-section trending-products-section">
+            <div class="storefront-container">
+                <div class="section-header">
+                    <h2 class="section-title">Trending Products</h2>
+                    <span class="section-subtitle">Most popular items chosen by shoppers this week</span>
+                </div>
+                <div class="product-card-grid">
+                    <template for:each={trendingProducts} for:item="prod">
+                        <div key={prod.Id} class="storefront-prod-card" onclick={handleDropdownProductClick} data-id={prod.Id}>
+                            <div class="storefront-prod-img-box">
+                                <img src={prod.imageUrl} alt={prod.Name} class="storefront-prod-img" onerror={handleProductImageError} data-id={prod.Id} loading="lazy" />
+                            </div>
+                            <div class="storefront-prod-details">
+                                <span class="storefront-prod-cat">{prod.category}</span>
+                                <h3 class="storefront-prod-name">{prod.Name}</h3>
+                                <template if:true={prod.displayPrice}>
+                                    <span class="storefront-prod-price">{prod.displayPrice}</span>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section D: Festive Deals -->
+        <div class="storefront-section festive-deals-section">
+            <div class="storefront-container">
+                <div class="festive-deals-box">
+                    <div class="section-header festive-header">
+                        <div class="festive-badge">Ganesh Chaturthi Festive Picks</div>
+                        <h2 class="section-title festive-title">Special Offers & Festive Deals</h2>
+                        <p class="section-subtitle festive-sub">Limited-time festive prices on top electronics, appliances & accessories</p>
+                    </div>
+                    <div class="product-card-grid festive-grid">
+                        <template for:each={festiveDeals} for:item="deal">
+                            <div key={deal.Id} class="storefront-prod-card festive-card" onclick={handleDropdownProductClick} data-id={deal.Id}>
+                                <span class="deal-tag">Festive Deal</span>
+                                <div class="storefront-prod-img-box">
+                                    <img src={deal.imageUrl} alt={deal.Name} class="storefront-prod-img" onerror={handleProductImageError} data-id={deal.Id} loading="lazy" />
+                                </div>
+                                <div class="storefront-prod-details">
+                                    <span class="storefront-prod-cat">{deal.category}</span>
+                                    <h3 class="storefront-prod-name">{deal.Name}</h3>
+                                    <template if:true={deal.displayPrice}>
+                                        <span class="storefront-prod-price festive-price">{deal.displayPrice}</span>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section E: Why Shop Commerce Hub -->
+        <div class="storefront-section why-shop-section">
+            <div class="storefront-container">
+                <div class="section-header center-header">
+                    <h2 class="section-title">Why Shop Commerce Hub?</h2>
+                    <span class="section-subtitle">Your trusted destination for quality e-commerce shopping</span>
+                </div>
+                <div class="why-grid">
+                    <div class="why-card">
+                        <div class="why-icon-box">
+                            <svg viewBox="0 0 24 24" class="why-svg"><path d="M4 6h16v2H4zm2 4h12v2H6zm-2 4h16v2H4zm2 4h12v2H6z" fill="#2563eb"/></svg>
+                        </div>
+                        <h3 class="why-title">WIDE PRODUCT SELECTION</h3>
+                        <p class="why-desc">Explore curated products across 17 everyday categories with multi-variant options.</p>
+                    </div>
+                    <div class="why-card">
+                        <div class="why-icon-box">
+                            <svg viewBox="0 0 24 24" class="why-svg"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" fill="#2563eb"/></svg>
+                        </div>
+                        <h3 class="why-title">SECURE CHECKOUT</h3>
+                        <p class="why-desc">Protected order and payment workflow with LWS-safe cart technology.</p>
+                    </div>
+                    <div class="why-card">
+                        <div class="why-icon-box">
+                            <svg viewBox="0 0 24 24" class="why-svg"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z" fill="#2563eb"/></svg>
+                        </div>
+                        <h3 class="why-title">EASY ORDER TRACKING</h3>
+                        <p class="why-desc">Access order status, cart items, and customer profile anytime.</p>
+                    </div>
+                    <div class="why-card">
+                        <div class="why-icon-box">
+                            <svg viewBox="0 0 24 24" class="why-svg"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" fill="#2563eb"/></svg>
+                        </div>
+                        <h3 class="why-title">CUSTOMER-FIRST RETURNS</h3>
+                        <p class="why-desc">Simple return workflow backed by reliable Commerce Hub support.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section F: Footer -->
+        <footer class="storefront-footer">
+            <div class="storefront-container footer-inner">
+                <div class="footer-col brand-col">
+                    <div class="footer-brand">Commerce Hub</div>
+                    <p class="footer-tagline">Your premier e-commerce destination for curated quality products.</p>
+                </div>
+                <div class="footer-col">
+                    <h4 class="footer-col-title">SHOP</h4>
+                    <ul class="footer-links">
+                        <li><span>Categories</span></li>
+                        <li><span>Featured Products</span></li>
+                        <li><span>Best Sellers</span></li>
+                        <li><span>Festive Offers</span></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4 class="footer-col-title">CUSTOMER SERVICE</h4>
+                    <ul class="footer-links">
+                        <li><span onclick={handleCartClick} class="clickable-span">My Cart</span></li>
+                        <li><span onclick={handleLoginClick} class="clickable-span">My Account</span></li>
+                        <li><span>Returns & Refunds</span></li>
+                        <li><span>Contact Support</span></li>
+                    </ul>
+                </div>
+                <div class="footer-col about-col">
+                    <h4 class="footer-col-title">ABOUT</h4>
+                    <p class="footer-about-text">
+                        Commerce Hub is a modern online shopping destination designed to bring a wide range of everyday products together in one convenient place. From electronics, mobiles and fashion to books, beauty, home, groceries, sports and more, customers can explore products with multiple variants, place secure orders, track their purchases and manage returns — all through a simple and customer-friendly shopping experience.
+                    </p>
+                    <ul class="footer-links">
+                        <li><span>Terms of Service</span></li>
+                        <li><span>Privacy Policy</span></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <div class="storefront-container footer-bottom-inner">
+                    <span>&copy; 2026 Commerce Hub. All rights reserved.</span>
+                    <span>Designed for Salesforce Experience Cloud</span>
+                </div>
+            </div>
+        </footer>
+
+        <!-- Delivery Location Drawer -->
+        <template if:true={_isLocationDrawerOpen}>
+            <div class="location-drawer-overlay" onclick={closeLocationDrawer}></div>
+            <div class="location-drawer-panel">
+                <div class="drawer-header">
+                    <h2 class="drawer-title">Select delivery location</h2>
+                    <button class="drawer-close-btn" onclick={closeLocationDrawer} aria-label="Close location panel">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="drawer-body">
+                    <template if:false={_isAddingNewAddress}>
+                        <div class="drawer-search-wrapper">
+                            <input 
+                                type="text" 
+                                class="drawer-search-input" 
+                                placeholder="Search by area, street name, PIN code"
+                                oninput={handleLocationSearchInput}
+                            />
+                        </div>
+
+                        <button class="current-location-btn" onclick={handleCurrentLocationClick}>
+                            <svg class="current-loc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <path d="M12 2v2m0 16v2M2 12h2m16 0h2"></path>
+                                <circle cx="12" cy="12" r="8"></circle>
+                            </svg>
+                            Use my current location
+                        </button>
+
+                        <div class="drawer-section-title">Saved addresses</div>
+
+                        <template if:true={isGuestUser}>
+                            <div class="drawer-guest-state">
+                                <p>Login to see saved addresses</p>
+                            </div>
+                        </template>
+                        <template if:false={isGuestUser}>
+                            <template if:true={hasSavedAddresses}>
+                                <div class="address-list">
+                                    <template for:each={formattedFilteredAddresses} for:item="addr">
+                                        <div 
+                                            key={addr.Id} 
+                                            class={addr.cssClass} 
+                                            data-id={addr.Id}
+                                            onclick={handleAddressSelect}
+                                        >
+                                            <div class="addr-card-header">
+                                                <span class="addr-type">{addr.Address_Type__c}</span>
+                                                <template if:true={addr.isSelected}>
+                                                    <span class="addr-default-badge">✓ Selected</span>
+                                                </template>
+                                                <template if:false={addr.isSelected}>
+                                                    <template if:true={addr.isDefault}>
+                                                        <span class="addr-default-badge">✓ Default</span>
+                                                    </template>
+                                                </template>
+                                            </div>
+                                            <div class="addr-details">
+                                                <p class="addr-street">{addr.Street__c}</p>
+                                                <p class="addr-city-state">{addr.City__c}, {addr.State__c} {addr.Postal_Code__c}</p>
+                                                <p class="addr-country">{addr.Country__c}</p>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                            <template if:false={hasSavedAddresses}>
+                                <div class="drawer-empty-state">
+                                    <p>No addresses found.</p>
+                                </div>
+                            </template>
+
+                            <button class="add-new-addr-btn" onclick={handleAddAddressClick}>
+                                + Add New Address
+                            </button>
+                        </template>
+                    </template>
+
+                    <!-- Add New Address Form -->
+                    <template if:true={_isAddingNewAddress}>
+                        <form onsubmit={handleSaveNewAddress} class="new-address-form">
+                            <h3 class="form-title">Add New Address</h3>
+                            
+                            <div class="form-group">
+                                <label>Address Type</label>
+                                <select class="address-form-input" data-field="Address_Type__c" required>
+                                    <option value="Shipping">Shipping</option>
+                                    <option value="Billing">Billing</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Street Address</label>
+                                <input type="text" class="address-form-input" data-field="Street__c" required />
+                            </div>
+
+                            <div class="form-group-row">
+                                <div class="form-group half">
+                                    <label>City</label>
+                                    <input type="text" class="address-form-input" data-field="City__c" required />
+                                </div>
+                                <div class="form-group half">
+                                    <label>State</label>
+                                    <input type="text" class="address-form-input" data-field="State__c" required />
+                                </div>
+                            </div>
+
+                            <div class="form-group-row">
+                                <div class="form-group half">
+                                    <label>PIN Code</label>
+                                    <input type="text" class="address-form-input" data-field="Postal_Code__c" required />
+                                </div>
+                                <div class="form-group half">
+                                    <label>Country</label>
+                                    <!-- Use standard text input for flexibility/fallback, matching native Salesforce schema -->
+                                    <input type="text" class="address-form-input" data-field="Country__c" required />
+                                </div>
+                            </div>
+
+                            <div class="form-group checkbox-group">
+                                <label>
+                                    <input type="checkbox" class="address-form-input" data-field="Is_Default__c" />
+                                    Make this my default address
+                                </label>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="button" class="btn-cancel" onclick={handleCancelAddAddress}>Cancel</button>
+                                <button type="submit" class="btn-save">Save Address</button>
+                            </div>
+                        </form>
+                    </template>
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

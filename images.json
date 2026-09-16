@@ -1,0 +1,36 @@
+{
+  "status": 0,
+  "result": {
+    "records": [
+      {
+        "attributes": {
+          "type": "ProductImage__c",
+          "url": "/services/data/v67.0/sobjects/ProductImage__c/a06dL00000SFtQfQAL"
+        },
+        "Id": "a06dL00000SFtQfQAL",
+        "Name": "Samsung Galaxy S25 - Front",
+        "Product__c": "01tdL00000gcLZVQA2",
+        "Image_URL__c": "https://placehold.co/600x600/png?text=Galaxy+S25+Front",
+        "Alt_Text__c": "Samsung Galaxy S25 front view",
+        "Display_Order__c": 1,
+        "Active__c": true
+      },
+      {
+        "attributes": {
+          "type": "ProductImage__c",
+          "url": "/services/data/v67.0/sobjects/ProductImage__c/a06dL00000SFtdZQAT"
+        },
+        "Id": "a06dL00000SFtdZQAT",
+        "Name": "Samsung Galaxy S25 - Back",
+        "Product__c": "01tdL00000gcLZVQA2",
+        "Image_URL__c": "https://placehold.co/600x600/png?text=Galaxy+S25+Back",
+        "Alt_Text__c": "Samsung Galaxy S25 back view",
+        "Display_Order__c": 2,
+        "Active__c": true
+      }
+    ],
+    "totalSize": 2,
+    "done": true
+  },
+  "warnings": []
+}
