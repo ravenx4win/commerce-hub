@@ -1,0 +1,215 @@
+<template>
+    <div class="electronics-container">
+
+        <!-- Breadcrumb Navigation -->
+        <nav class="breadcrumb-nav" aria-label="Breadcrumb">
+            <button class="breadcrumb-link" onclick={handleHomeClick}>Home</button>
+            <span class="breadcrumb-sep" aria-hidden="true">/</span>
+            <span>Categories</span>
+            <span class="breadcrumb-sep" aria-hidden="true">/</span>
+            <span class="breadcrumb-current" aria-current="page">Electronics</span>
+        </nav>
+
+        <!-- Hero Header -->
+        <header class="electronics-hero">
+            <div class="hero-pattern" aria-hidden="true"></div>
+            <div class="hero-content">
+                <div class="hero-badge-wrap">
+                    <span>⚡ Next-Gen Tech &amp; Computing</span>
+                </div>
+                <h1 class="hero-title">Electronics &amp; Gadgets</h1>
+                <p class="hero-subtitle">
+                    Power up your digital workspace with professional 4K creator cameras, AMOLED smartwatches, curved panoramic monitors, and smart home IoT gear.
+                </p>
+                <div class="hero-highlights">
+                    <div class="highlight-item">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                        <span>2-Year Manufacturer Warranty</span>
+                    </div>
+                    <div class="highlight-item">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="1" y="3" width="15" height="13"/>
+                            <polygon points="16 8 20 8 23 11 23 16 16 16 8"/>
+                            <circle cx="5.5" cy="18.5" r="2.5"/>
+                            <circle cx="18.5" cy="18.5" r="2.5"/>
+                        </svg>
+                        <span>Same-Day Tech Dispatch</span>
+                    </div>
+                    <div class="highlight-item">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="23 4 23 10 17 10"/>
+                            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                        </svg>
+                        <span>7-Day Replacement Guarantee</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visual Icon Badge -->
+            <div class="hero-icon-card" aria-hidden="true">
+                <div class="hero-icon-circle">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hero-svg-icon">
+                        <rect x="2" y="4" width="20" height="12" rx="2"></rect>
+                        <line x1="6" y1="20" x2="18" y2="20"></line>
+                        <line x1="12" y1="16" x2="12" y2="20"></line>
+                    </svg>
+                </div>
+            </div>
+        </header>
+
+        <!-- Subcategory Pills & Search/Sort Bar -->
+        <section class="controls-section">
+            <div class="pills-scroll-wrapper">
+                <div class="pills-container" role="tablist" aria-label="Electronics subcategories">
+                    <template for:each={subcategories} for:item="pill">
+                        <button
+                            key={pill.id}
+                            class={pill.activeClass}
+                            role="tab"
+                            aria-selected={pill.active}
+                            data-filter={pill.value}
+                            onclick={handlePillClick}
+                        >
+                            {pill.label}
+                            <span class="pill-count">({pill.count})</span>
+                        </button>
+                    </template>
+                </div>
+            </div>
+
+            <div class="toolbar">
+                <div class="search-wrap">
+                    <svg class="search-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    <input
+                        type="search"
+                        class="search-input"
+                        placeholder="Search gadgets, displays, accessories, smart home..."
+                        value={searchTerm}
+                        oninput={handleSearchInput}
+                        aria-label="Search electronics"
+                    />
+                    <template if:true={hasSearchTerm}>
+                        <button class="clear-search-btn" onclick={handleClearSearch} aria-label="Clear search">✕</button>
+                    </template>
+                </div>
+
+                <div class="sort-wrap">
+                    <label for="electronics-sort-select" class="sort-label">Sort by:</label>
+                    <select id="electronics-sort-select" class="sort-select" onchange={handleSortChange}>
+                        <option value="featured">Featured First</option>
+                        <option value="price-asc">Price: Low to High</option>
+                        <option value="price-desc">Price: High to Low</option>
+                        <option value="rating">Highest Rated</option>
+                        <option value="name-asc">Name: A to Z</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <!-- Products Summary Bar -->
+        <div class="results-header">
+            <span class="results-count">Showing <strong>{displayedProductsCount}</strong> electronics &amp; gadgets</span>
+            <template if:true={hasActiveFilters}>
+                <button class="reset-filters-btn" onclick={handleResetFilters}>Reset filters</button>
+            </template>
+        </div>
+
+        <!-- Product Grid -->
+        <main class="products-grid-section">
+            <template if:true={hasProducts}>
+                <div class="product-grid">
+                    <template for:each={filteredProducts} for:item="product">
+                        <article key={product.id} class="product-card" data-id={product.id}>
+                            <div class="product-image-wrap" onclick={handleProductClick} data-id={product.id}>
+                                <template if:true={product.badge}>
+                                    <span class={product.badgeClass}>{product.badge}</span>
+                                </template>
+                                <img
+                                    src={product.imageUrl}
+                                    alt={product.name}
+                                    class="product-image"
+                                    loading="lazy"
+                                    onerror={handleImageError}
+                                    data-id={product.id}
+                                />
+                            </div>
+
+                            <div class="product-info">
+                                <div class="product-meta">
+                                    <span class="product-subcat">{product.subcategory} • {product.productCode}</span>
+                                    <div class="product-rating" aria-label={product.ratingLabel}>
+                                        <span class="rating-star">★</span>
+                                        <span class="rating-value">{product.rating}</span>
+                                        <span class="rating-count">({product.reviewsCount})</span>
+                                    </div>
+                                </div>
+
+                                <h2 class="product-title" onclick={handleProductClick} data-id={product.id}>
+                                    {product.name}
+                                </h2>
+
+                                <p class="product-desc">{product.description}</p>
+
+                                <div class="product-pricing">
+                                    <span class="price-current">₹{product.formattedPrice}</span>
+                                    <template if:true={product.originalPrice}>
+                                        <span class="price-original">₹{product.formattedOriginalPrice}</span>
+                                        <span class="price-discount">{product.discountPercent}% off</span>
+                                    </template>
+                                </div>
+
+                                <div class="product-actions">
+                                    <button
+                                        class="btn-action btn-secondary"
+                                        onclick={handleProductClick}
+                                        data-id={product.id}
+                                        aria-label={product.detailsAriaLabel}
+                                    >
+                                        Details
+                                    </button>
+                                    <button
+                                        class="btn-action btn-primary"
+                                        onclick={handleAddToCart}
+                                        data-id={product.id}
+                                        aria-label={product.addToCartAriaLabel}
+                                    >
+                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                                            <circle cx="9" cy="21" r="1"/>
+                                            <circle cx="20" cy="21" r="1"/>
+                                            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                                        </svg>
+                                        Add to Cart
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
+                    </template>
+                </div>
+            </template>
+
+            <!-- Empty State -->
+            <template if:false={hasProducts}>
+                <div class="empty-state">
+                    <div class="empty-icon">⚡</div>
+                    <h3 class="empty-title">No gadgets match your search</h3>
+                    <p class="empty-subtitle">Try searching with other technical keywords or reset the filters.</p>
+                    <button class="btn-action btn-primary" onclick={handleResetFilters}>Clear Filters</button>
+                </div>
+            </template>
+        </main>
+
+        <!-- Cart Feedback Toast -->
+        <template if:true={showCartToast}>
+            <aside class="cart-toast" role="status" aria-live="polite">
+                <span class="toast-icon">✓</span>
+                <span class="toast-message">{toastMessage}</span>
+            </aside>
+        </template>
+
+    </div>
+</template>

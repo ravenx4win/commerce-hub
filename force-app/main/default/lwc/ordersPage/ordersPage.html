@@ -1,0 +1,157 @@
+<template>
+    <div class="orders-page-container">
+        <!-- Breadcrumb Navigation -->
+        <nav class="breadcrumb-bar" aria-label="Breadcrumbs">
+            <div class="breadcrumb-inner">
+                <button class="breadcrumb-link-btn" onclick={handleBackToHome} aria-label="Navigate to Home">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="home-icon" aria-hidden="true">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                    <span>Home</span>
+                </button>
+                <span class="breadcrumb-sep" aria-hidden="true">/</span>
+                <span class="breadcrumb-current">My Orders</span>
+            </div>
+        </nav>
+
+        <!-- Page Header -->
+        <header class="orders-header">
+            <div class="header-left">
+                <h1 class="page-title">My Orders</h1>
+                <span class="order-count-badge" if:true={hasOrders}>{orderCount} {orderCountLabel}</span>
+            </div>
+            <div class="header-right" if:true={hasOrders}>
+                <div class="search-wrap">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="search-icon" aria-hidden="true">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input
+                        type="text"
+                        class="search-input"
+                        placeholder="Search by Order ID or product..."
+                        value={searchQuery}
+                        oninput={handleSearchInput}
+                        aria-label="Search orders"
+                    />
+                    <button class="clear-search-btn" if:true={searchQuery} onclick={handleClearSearch} title="Clear search">✕</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Empty State -->
+        <template if:false={hasOrders}>
+            <div class="empty-orders-card">
+                <div class="empty-icon-wrapper" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="empty-svg">
+                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <path d="M16 10a4 4 0 0 1-8 0"></path>
+                    </svg>
+                </div>
+                <h2 class="empty-title">No orders placed yet</h2>
+                <p class="empty-subtitle">When you place an order with Stripe or any supported payment method, you'll be able to track delivery and view receipts right here.</p>
+                <button class="btn-primary btn-shop-now" onclick={handleBackToHome}>
+                    <span>Start Shopping</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="arrow-icon">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </button>
+            </div>
+        </template>
+
+        <!-- Active Orders List -->
+        <template if:true={hasOrders}>
+            <div class="orders-list">
+                <template for:each={filteredOrders} for:item="ord">
+                    <article key={ord.orderId} class="order-card">
+                        <!-- Card Header -->
+                        <header class="order-card-header">
+                            <div class="order-header-primary">
+                                <div class="order-meta-group">
+                                    <span class="meta-label">ORDER PLACED</span>
+                                    <span class="meta-value">{ord.formattedDate}</span>
+                                </div>
+                                <div class="order-meta-group">
+                                    <span class="meta-label">TOTAL AMOUNT</span>
+                                    <span class="meta-value price-highlight">₹{ord.totalAmount}</span>
+                                </div>
+                                <div class="order-meta-group" if:true={ord.shippingAddress}>
+                                    <span class="meta-label">SHIP TO</span>
+                                    <span class="meta-value address-snippet">{ord.shippingAddress.City__c}, {ord.shippingAddress.State__c}</span>
+                                </div>
+                            </div>
+                            <div class="order-header-secondary">
+                                <div class="order-id-badge">
+                                    <span class="order-num-label">Order #</span>
+                                    <span class="order-num">{ord.orderNumber}</span>
+                                </div>
+                                <div class="payment-badge-group">
+                                    <span class="stripe-paid-badge" if:true={ord.stripeTransactionId}>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="stripe-badge-icon">
+                                            <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+                                            <line x1="2" y1="10" x2="22" y2="10"></line>
+                                        </svg>
+                                        <span>Paid with Stripe</span>
+                                    </span>
+                                </div>
+                            </div>
+                        </header>
+
+                        <!-- Tracking Strip -->
+                        <div class="tracking-summary-strip">
+                            <div class="tracking-status-badge">
+                                <span class="status-dot"></span>
+                                <span class="status-text">{ord.status} &bull; {ord.shippingStatus}</span>
+                            </div>
+                            <div class="stripe-tx-info" if:true={ord.stripeTransactionId}>
+                                <span class="tx-label">Stripe Charge:</span>
+                                <code class="tx-code">{ord.stripeTransactionId}</code>
+                            </div>
+                        </div>
+
+                        <!-- Card Body: Products Ordered -->
+                        <div class="order-items-list">
+                            <template for:each={ord.items} for:item="item">
+                                <div key={item.id} class="order-item-row">
+                                    <div class="item-thumb-box clickable-item" data-id={item.id} data-category={item.category} onclick={handleProductSelect} title="View product">
+                                        <img src={item.imageUrl} alt={item.name} class="item-thumb-img" onerror={handleImageFallback} loading="lazy" />
+                                    </div>
+                                    <div class="item-info-col">
+                                        <span class="item-cat-tag" if:true={item.subcategory}>{item.subcategory}</span>
+                                        <h3 class="item-name clickable-item" data-id={item.id} data-category={item.category} onclick={handleProductSelect} title="View product">
+                                            {item.name}
+                                        </h3>
+                                        <div class="item-pricing-row">
+                                            <span class="item-qty">Qty: {item.quantity}</span>
+                                            <span class="item-unit-price">&times; ₹{item.price}</span>
+                                        </div>
+                                    </div>
+                                    <div class="item-total-col">
+                                        <span class="item-row-total">₹{item.itemTotal}</span>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+
+                        <!-- Order Card Footer -->
+                        <footer class="order-card-footer">
+                            <div class="footer-details-summary">
+                                <span class="summary-chip">Items ({ord.itemCount})</span>
+                                <span class="summary-chip" if:true={ord.discount}>Discount: -₹{ord.discount}</span>
+                                <span class="summary-chip">Delivery: {ord.shippingChargeLabel}</span>
+                            </div>
+                            <div class="footer-actions">
+                                <button class="btn-secondary-sm" onclick={handleBackToHome}>
+                                    Buy Again
+                                </button>
+                            </div>
+                        </footer>
+                    </article>
+                </template>
+            </div>
+        </template>
+    </div>
+</template>

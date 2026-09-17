@@ -1,0 +1,241 @@
+<template>
+    <div class="cart-container">
+        <!-- Toast Feedback -->
+        <template if:true={showToast}>
+            <div class="toast-banner alert-toast">
+                <span class="toast-icon">✓</span>
+                <span class="toast-text">{toastMessage}</span>
+            </div>
+        </template>
+
+        <!-- Top Navigation / Breadcrumbs -->
+        <nav class="cart-breadcrumb-bar" aria-label="Breadcrumb navigation">
+            <div class="breadcrumb-inner">
+                <button class="breadcrumb-link-btn" onclick={handleBackToHome} aria-label="Navigate to Home Page">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="home-icon" aria-hidden="true">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                    <span>Home</span>
+                </button>
+                <span class="breadcrumb-separator" aria-hidden="true">/</span>
+                <span class="breadcrumb-current">Shopping Cart</span>
+            </div>
+        </nav>
+
+        <!-- Page Header -->
+        <header class="cart-header">
+            <div class="header-left">
+                <h1 class="page-title">Shopping Cart</h1>
+                <span class="item-count-badge" if:true={hasItems}>{itemCount} {itemLabel}</span>
+            </div>
+            <div class="header-right" if:true={hasItems}>
+                <button class="btn-clear-cart" onclick={handleClearCart}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="trash-icon" aria-hidden="true">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                    <span>Clear Cart</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Empty Cart State -->
+        <template if:false={hasItems}>
+            <div class="empty-cart-card">
+                <div class="empty-cart-icon-wrapper" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="empty-cart-svg">
+                        <circle cx="9" cy="21" r="1"></circle>
+                        <circle cx="20" cy="21" r="1"></circle>
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                    </svg>
+                </div>
+                <h2 class="empty-cart-title">Your shopping cart is empty</h2>
+                <p class="empty-cart-subtitle">Looks like you haven't added any products to your cart yet. Explore our curated categories and find something amazing today!</p>
+                <button class="btn-primary btn-shop-now" onclick={handleBackToHome}>
+                    <span>Continue Shopping</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="arrow-icon">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </button>
+            </div>
+        </template>
+
+        <!-- Active Cart Layout -->
+        <template if:true={hasItems}>
+            <!-- Free Shipping Progress Bar -->
+            <div class="shipping-progress-card">
+                <template if:true={isFreeShippingUnlocked}>
+                    <div class="progress-message success">
+                        <span class="icon">🎉</span>
+                        <span>Congratulations! You qualify for <strong>FREE Express Delivery</strong>!</span>
+                    </div>
+                </template>
+                <template if:false={isFreeShippingUnlocked}>
+                    <div class="progress-message info">
+                        <span>Add <strong>₹{amountNeededForFreeShipping}</strong> more to unlock <strong>FREE Delivery</strong>!</span>
+                    </div>
+                    <div class="progress-bar-bg" role="progressbar" aria-valuenow={shippingProgressPercent} aria-valuemin="0" aria-valuemax="100">
+                        <div class="progress-bar-fill" style={shippingProgressStyle}></div>
+                    </div>
+                </template>
+            </div>
+
+            <div class="cart-main-grid">
+                <!-- Left Column: Item List -->
+                <section class="cart-items-section" aria-label="Cart Products">
+                    <div class="cart-items-list">
+                        <template for:each={cartItems} for:item="item">
+                            <article key={item.id} class="cart-item-card">
+                                <div class="item-image-col clickable-item" data-id={item.id} data-category={item.category} onclick={handleProductSelect} role="button" tabindex="0" title="View product details">
+                                    <img src={item.imageUrl} alt={item.name} class="item-img" onerror={handleImageError} loading="lazy" />
+                                </div>
+                                <div class="item-details-col">
+                                    <div class="item-category" if:true={item.subcategory}>{item.subcategory}</div>
+                                    <h3 class="item-title clickable-item" data-id={item.id} data-category={item.category} onclick={handleProductSelect} role="button" tabindex="0" title="View product details">{item.name}</h3>
+                                    <div class="item-pricing">
+                                        <span class="current-price">₹{item.price}</span>
+                                        <span class="orig-price" if:true={item.originalPrice}>₹{item.originalPrice}</span>
+                                    </div>
+                                </div>
+                                <div class="item-quantity-col">
+                                    <div class="qty-stepper" role="group" aria-label="Quantity Stepper">
+                                        <button class="qty-btn btn-minus" data-id={item.id} onclick={handleDecrementQty} aria-label="Decrease quantity">
+                                            -
+                                        </button>
+                                        <span class="qty-val">{item.quantity}</span>
+                                        <button class="qty-btn btn-plus" data-id={item.id} onclick={handleIncrementQty} aria-label="Increase quantity">
+                                            +
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="item-total-col">
+                                    <span class="item-subtotal">₹{item.itemTotal}</span>
+                                    <button class="btn-remove-item" data-id={item.id} onclick={handleRemoveItem} aria-label="Remove product">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="remove-svg">
+                                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </article>
+                        </template>
+                    </div>
+
+                    <!-- Cart Actions Footer -->
+                    <div class="cart-actions-bar">
+                        <button class="btn-secondary" onclick={handleBackToHome}>
+                            &larr; Continue Shopping
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Right Column: Order Summary & Coupon -->
+                <aside class="cart-summary-sidebar" aria-label="Order Summary">
+                    <!-- Coupon Code Card -->
+                    <div class="summary-card coupon-card">
+                        <h3 class="card-title">Apply Coupon</h3>
+                        <div class="coupon-form" if:false={hasAppliedPromo}>
+                            <input 
+                                type="text" 
+                                class="coupon-input" 
+                                placeholder="Enter coupon code (e.g. FESTIVE20)" 
+                                value={couponInput}
+                                oninput={handleCouponInput}
+                                onkeyup={handleCouponKeyUp}
+                            />
+                            <button class="btn-apply-coupon" onclick={handleApplyCoupon}>Apply</button>
+                        </div>
+
+                        <!-- Applied Promo Badge -->
+                        <template if:true={hasAppliedPromo}>
+                            <div class="applied-promo-badge">
+                                <div class="promo-info">
+                                    <span class="promo-code-tag">🏷️ {appliedPromo.code}</span>
+                                    <span class="promo-desc">{appliedPromo.description}</span>
+                                </div>
+                                <button class="btn-remove-promo" onclick={handleRemoveCoupon} aria-label="Remove coupon">✕</button>
+                            </div>
+                        </template>
+
+                        <!-- Suggested Promos -->
+                        <div class="suggested-promos" if:false={hasAppliedPromo}>
+                            <span class="suggest-label">Available Offers:</span>
+                            <div class="promo-pills">
+                                <button class="promo-pill" data-code="FESTIVE20" onclick={handleQuickApplyPromo}>
+                                    <strong>FESTIVE20</strong> (20% OFF)
+                                </button>
+                                <button class="promo-pill" data-code="WELCOME10" onclick={handleQuickApplyPromo}>
+                                    <strong>WELCOME10</strong> (10% OFF)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Price Summary Card -->
+                    <div class="summary-card price-summary-card">
+                        <h3 class="card-title">Order Summary</h3>
+                        
+                        <div class="summary-row">
+                            <span class="label">Bag Total ({itemCount} items)</span>
+                            <span class="value">₹{summary.originalTotal}</span>
+                        </div>
+
+                        <div class="summary-row highlight-green" if:true={summary.productDiscount}>
+                            <span class="label">Product Discount</span>
+                            <span class="value">- ₹{summary.productDiscount}</span>
+                        </div>
+
+                        <div class="summary-row highlight-green" if:true={summary.promoDiscount}>
+                            <span class="label">Coupon Discount ({appliedPromo.code})</span>
+                            <span class="value">- ₹{summary.promoDiscount}</span>
+                        </div>
+
+                        <div class="summary-row">
+                            <span class="label">Delivery Charges</span>
+                            <span class="value free-text" if:true={isFreeShipping}>FREE</span>
+                            <span class="value" if:false={isFreeShipping}>₹{summary.shipping}</span>
+                        </div>
+
+                        <div class="summary-divider"></div>
+
+                        <div class="summary-row grand-total-row">
+                            <span class="label">Total Amount</span>
+                            <span class="value grand-total">₹{summary.grandTotal}</span>
+                        </div>
+
+                        <div class="total-savings-banner" if:true={hasTotalSavings}>
+                            You will save <strong>₹{summary.totalDiscount}</strong> on this order!
+                        </div>
+
+                        <button class="btn-primary btn-checkout" onclick={handleProceedToCheckout}>
+                            <span>Proceed to Checkout</span>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="arrow-icon">
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                                <polyline points="12 5 19 12 12 19"></polyline>
+                            </svg>
+                        </button>
+
+                        <!-- Trust Badges -->
+                        <div class="trust-strip">
+                            <div class="trust-badge-item">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="trust-svg">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                </svg>
+                                <span>100% Safe Payments</span>
+                            </div>
+                            <div class="trust-badge-item">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="trust-svg">
+                                    <polyline points="23 4 23 10 17 10"></polyline>
+                                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                                </svg>
+                                <span>Easy 7-Day Returns</span>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </template>
+    </div>
+</template>

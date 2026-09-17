@@ -97,11 +97,68 @@
                     </button>
 
                     <div class="action-buttons-group">
-                        <!-- Login -->
+                        <template if:true={isCustomerLoggedIn}>
+                            <!-- Logged In Customer Profile -->
+                            <div class="customer-auth-group">
+                                <button
+                                    class="action-btn customer-btn"
+                                    onclick={openLocationDrawer}
+                                    aria-label="Customer profile and delivery addresses"
+                                >
+                                    <svg
+                                        class="btn-icon"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        aria-hidden="true"
+                                    >
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                        <circle cx="12" cy="7" r="4" />
+                                    </svg>
+                                    <span class="customer-greeting-text">{customerGreeting}</span>
+                                </button>
+                                <button
+                                    class="btn-logout-header"
+                                    onclick={handleLogout}
+                                    title="Sign Out"
+                                    aria-label="Sign out of customer account"
+                                >
+                                    Sign Out
+                                </button>
+                            </div>
+                        </template>
+                        <template if:false={isCustomerLoggedIn}>
+                            <!-- Guest Login Button -->
+                            <button
+                                class="action-btn"
+                                onclick={handleLoginClick}
+                                aria-label="Login to your account"
+                            >
+                                <svg
+                                    class="btn-icon"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    aria-hidden="true"
+                                >
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                    <circle cx="12" cy="7" r="4" />
+                                </svg>
+                                <span>Login</span>
+                            </button>
+                        </template>
+
+                        <!-- Orders -->
                         <button
-                            class="action-btn"
-                            onclick={handleLoginClick}
-                            aria-label="Login to your account"
+                            class="action-btn orders-btn"
+                            onclick={handleOrdersClick}
+                            aria-label="View your placed orders"
                         >
                             <svg
                                 class="btn-icon"
@@ -113,10 +170,11 @@
                                 stroke-linejoin="round"
                                 aria-hidden="true"
                             >
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                                <circle cx="12" cy="7" r="4" />
+                                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                                <line x1="3" y1="6" x2="21" y2="6" />
+                                <path d="M16 10a4 4 0 0 1-8 0" />
                             </svg>
-                            <span>Login</span>
+                            <span>Orders</span>
                         </button>
 
                         <!-- Cart -->
@@ -333,14 +391,176 @@
                             <button class="view-all-btn" onclick={handleViewAllCategory} aria-label={viewAllAriaLabel}>
                                 {viewAllButtonText}
                             </button>
+                            <template if:true={isHoveredCategoryAppliances}>
+                                <button class="view-all-page-btn" onclick={navigateToAppliances} aria-label="Open /appliances page">
+                                    Open /appliances Page &rarr;
+                                </button>
+                            </template>
+                            <template if:true={isHoveredCategoryAudio}>
+                                <button class="view-all-page-btn" onclick={navigateToAudio} aria-label="Open /audio page">
+                                    Open /audio Page &rarr;
+                                </button>
+                            </template>
+                            <template if:true={isHoveredCategoryBeauty}>
+                                <button class="view-all-page-btn" onclick={navigateToBeauty} aria-label="Open /beauty page">
+                                    Open /beauty Page &rarr;
+                                </button>
+                            </template>
+                            <template if:true={isHoveredCategoryBooks}>
+                                <button class="view-all-page-btn" onclick={navigateToBooks} aria-label="Open /books page">
+                                    Open /books Page &rarr;
+                                </button>
+                            </template>
+                            <template if:true={isHoveredCategoryClothing}>
+                                <button class="view-all-page-btn" onclick={navigateToClothing} aria-label="Open /clothing page">
+                                    Open /clothing Page &rarr;
+                                </button>
+                            </template>
+                            <template if:true={isHoveredCategoryElectronics}>
+                                <button class="view-all-page-btn" onclick={navigateToElectronics} aria-label="Open /electronics page">
+                                    Open /electronics Page &rarr;
+                                </button>
+                            </template>
+                            <template if:true={isHoveredCategoryFood}>
+                                <button class="view-all-page-btn" onclick={navigateToFoodGrocery} aria-label="Open /food-grocery page">
+                                    Open /food-grocery Page &rarr;
+                                </button>
+                            </template>
+                            <template if:true={isHoveredCategoryFurniture}>
+                                <button class="view-all-page-btn" onclick={navigateToFurniture} aria-label="Open /furniture page">
+                                    Open /furniture Page &rarr;
+                                </button>
+                            </template>
+                            <template if:true={isHoveredCategoryHomeLiving}>
+                                <button class="view-all-page-btn" onclick={navigateToHomeLiving} aria-label="Open /home-living page">
+                                    Open /home-living Page &rarr;
+                                </button>
+                            </template>
+                            <template if:true={isHoveredCategoryKitchenDining}>
+                                <button class="view-all-page-btn" onclick={navigateToKitchenDining} aria-label="Open /kitchen-dining page">
+                                    Open /kitchen-dining Page &rarr;
+                                </button>
+                            </template>
+                            <template if:true={isHoveredCategoryLaptopsComputers}>
+                                <button class="view-all-page-btn" onclick={navigateToLaptopsComputers} aria-label="Open /laptops-computers page">
+                                    Open /laptops-computers Page &rarr;
+                                </button>
+                            </template>
+                            <template if:true={isHoveredCategoryMobiles}>
+                                <button class="view-all-page-btn" onclick={navigateToMobiles} aria-label="Open /mobiles page">
+                                    Open /mobiles Page &rarr;
+                                </button>
+                            </template>
+                            <template if:true={isHoveredCategoryPersonalCare}>
+                                <button class="view-all-page-btn" onclick={navigateToPersonalCare} aria-label="Open /personal-care page">
+                                    Open /personal-care Page &rarr;
+                                </button>
+                            </template>
+                            <template if:true={isHoveredCategorySportsFitness}>
+                                <button class="view-all-page-btn" onclick={navigateToSportsFitness} aria-label="Open /sports-fitness page">
+                                    Open /sports-fitness Page &rarr;
+                                </button>
+                            </template>
+                            <template if:true={isHoveredCategoryToysGames}>
+                                <button class="view-all-page-btn" onclick={navigateToToysGames} aria-label="Open /toys-games page">
+                                    Open /toys-games Page &rarr;
+                                </button>
+                            </template>
+                            <template if:true={isHoveredCategoryTravelLuggage}>
+                                <button class="view-all-page-btn" onclick={navigateToTravelLuggage} aria-label="Open /travel-luggage page">
+                                    Open /travel-luggage Page &rarr;
+                                </button>
+                            </template>
+                            <template if:true={isHoveredCategoryWatchesAccessories}>
+                                <button class="view-all-page-btn" onclick={navigateToWatchesAccessories} aria-label="Open /watches-accessories page">
+                                    Open /watches-accessories Page &rarr;
+                                </button>
+                            </template>
                         </div>
                     </div>
                 </div>
             </template>
         </div>
 
-        <!-- Row 4: Ganesh Chaturthi Promotional Banner -->
-        <div class="promo-banner-section">
+        <!-- Product Detail Page (Reusable across categories) -->
+        <template if:true={isProductDetailView}>
+            <c-product-detail
+                product-id={_selectedProductId}
+                category-slug={_selectedCategory}
+                onbacktohome={handleBrandClick}
+                onbacktocategory={handleBackToCategory}
+            ></c-product-detail>
+        </template>
+
+        <!-- Conditional Category Pages -->
+        <template if:true={isAppliancesView}>
+            <c-appliances-page onbacktohome={handleBrandClick} onproductselect={handleProductSelect}></c-appliances-page>
+        </template>
+        <template if:true={isAudioView}>
+            <c-audio-page onbacktohome={handleBrandClick} onproductselect={handleProductSelect}></c-audio-page>
+        </template>
+        <template if:true={isBeautyView}>
+            <c-beauty-page onbacktohome={handleBrandClick} onproductselect={handleProductSelect}></c-beauty-page>
+        </template>
+        <template if:true={isBooksView}>
+            <c-books-page onbacktohome={handleBrandClick} onproductselect={handleProductSelect}></c-books-page>
+        </template>
+        <template if:true={isClothingView}>
+            <c-clothing-page onbacktohome={handleBrandClick} onproductselect={handleProductSelect}></c-clothing-page>
+        </template>
+        <template if:true={isElectronicsView}>
+            <c-electronics-page onbacktohome={handleBrandClick} onproductselect={handleProductSelect}></c-electronics-page>
+        </template>
+        <template if:true={isFoodGroceryView}>
+            <c-food-grocery-page onbacktohome={handleBrandClick} onproductselect={handleProductSelect}></c-food-grocery-page>
+        </template>
+        <template if:true={isFurnitureView}>
+            <c-furniture-page onbacktohome={handleBrandClick} onproductselect={handleProductSelect}></c-furniture-page>
+        </template>
+        <template if:true={isHomeLivingView}>
+            <c-home-living-page onbacktohome={handleBrandClick} onproductselect={handleProductSelect}></c-home-living-page>
+        </template>
+        <template if:true={isKitchenDiningView}>
+            <c-kitchen-dining-page onbacktohome={handleBrandClick} onproductselect={handleProductSelect}></c-kitchen-dining-page>
+        </template>
+        <template if:true={isLaptopsComputersView}>
+            <c-laptops-computers-page onbacktohome={handleBrandClick} onproductselect={handleProductSelect}></c-laptops-computers-page>
+        </template>
+        <template if:true={isMobilesView}>
+            <c-mobiles-page onbacktohome={handleBrandClick} onproductselect={handleProductSelect}></c-mobiles-page>
+        </template>
+        <template if:true={isPersonalCareView}>
+            <c-personal-care-page onbacktohome={handleBrandClick} onproductselect={handleProductSelect}></c-personal-care-page>
+        </template>
+        <template if:true={isSportsFitnessView}>
+            <c-sports-fitness-page onbacktohome={handleBrandClick} onproductselect={handleProductSelect}></c-sports-fitness-page>
+        </template>
+        <template if:true={isToysGamesView}>
+            <c-toys-games-page onbacktohome={handleBrandClick} onproductselect={handleProductSelect}></c-toys-games-page>
+        </template>
+        <template if:true={isTravelLuggageView}>
+            <c-travel-luggage-page onbacktohome={handleBrandClick} onproductselect={handleProductSelect}></c-travel-luggage-page>
+        </template>
+        <template if:true={isWatchesAccessoriesView}>
+            <c-watches-accessories-page onbacktohome={handleBrandClick} onproductselect={handleProductSelect}></c-watches-accessories-page>
+        </template>
+        <template if:true={isCartView}>
+            <c-cart-page onbacktohome={handleBrandClick} oncheckout={navigateToCheckout} onproductselect={handleProductSelect}></c-cart-page>
+        </template>
+        <template if:true={isCheckoutView}>
+            <c-checkout-page onbacktocart={navigateToCart} onbacktohome={handleBrandClick} onnavigatetologin={navigateToLogin} onnavigatetoorders={navigateToOrders}></c-checkout-page>
+        </template>
+        <template if:true={isOrdersView}>
+            <c-orders-page onbacktohome={handleBrandClick} onproductselect={handleProductSelect}></c-orders-page>
+        </template>
+        <template if:true={isLoginView}>
+            <c-login-page onbacktohome={handleBrandClick} onloginsuccess={handleLoginSuccess} onnavigatetocheckout={navigateToCheckout}></c-login-page>
+        </template>
+
+        <!-- Standard Home Storefront -->
+        <template if:true={isHomeView}>
+            <!-- Row 4: Ganesh Chaturthi Promotional Banner -->
+            <div class="promo-banner-section">
             <div class="promo-banner-inner">
                 <div class="promo-content">
                     <span class="promo-badge">Festive Offer</span>
@@ -569,6 +789,7 @@
                 </div>
             </div>
         </div>
+        </template>
 
         <!-- Section F: Footer -->
         <footer class="storefront-footer">

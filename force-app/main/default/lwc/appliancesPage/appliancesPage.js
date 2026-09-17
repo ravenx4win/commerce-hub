@@ -1,12 +1,14 @@
 import { LightningElement, wire, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import getProducts from '@salesforce/apex/CommerceProductController.getProducts';
+import { addToCart } from 'c/cartService';
 
 const DEFAULT_APPLIANCES = [
     {
         id: 'APP001',
         name: 'Air Fryer',
         productCode: 'CH-APP001',
+        categoryCode: 'APP',
         subCategory: 'Kitchen',
         description: 'Rapid air circulation technology with touch controls for healthy, oil-free frying.',
         price: 4499,
@@ -16,12 +18,14 @@ const DEFAULT_APPLIANCES = [
         ratingCount: 420,
         badge: 'Best Seller',
         badgeClass: 'badge-tag bestseller',
-        isKitchen: true
+        isKitchen: true,
+        imageUrl: 'https://images.unsplash.com/photo-1585659722983-3a675dabf23d?w=500&auto=format&fit=crop&q=60'
     },
     {
         id: 'APP002',
         name: 'Mixer Grinder',
         productCode: 'CH-APP002',
+        categoryCode: 'APP',
         subCategory: 'Kitchen',
         description: '750W heavy duty copper motor with 3 stainless steel jars for tough grinding.',
         price: 2999,
@@ -31,12 +35,14 @@ const DEFAULT_APPLIANCES = [
         ratingCount: 310,
         badge: 'Top Rated',
         badgeClass: 'badge-tag toprated',
-        isKitchen: true
+        isKitchen: true,
+        imageUrl: 'https://images.unsplash.com/photo-1570222094114-d054a817e56b?w=500&auto=format&fit=crop&q=60'
     },
     {
         id: 'APP003',
         name: 'Microwave Oven',
         productCode: 'CH-APP003',
+        categoryCode: 'APP',
         subCategory: 'Kitchen',
         description: '28L convection microwave with auto-cook menus, defrost and baking functions.',
         price: 7990,
@@ -46,12 +52,14 @@ const DEFAULT_APPLIANCES = [
         ratingCount: 185,
         badge: 'Festive Deal',
         badgeClass: 'badge-tag festivedeal',
-        isKitchen: true
+        isKitchen: true,
+        imageUrl: 'https://images.unsplash.com/photo-1574269909862-7e1d70bb8078?w=500&auto=format&fit=crop&q=60'
     },
     {
         id: 'APP004',
         name: 'Electric Kettle',
         productCode: 'CH-APP004',
+        categoryCode: 'APP',
         subCategory: 'Kitchen',
         description: '1.8L fast-boil stainless steel kettle with auto shut-off and dry-boil safety.',
         price: 1199,
@@ -61,12 +69,14 @@ const DEFAULT_APPLIANCES = [
         ratingCount: 650,
         badge: 'Popular',
         badgeClass: 'badge-tag popular',
-        isKitchen: true
+        isKitchen: true,
+        imageUrl: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=500&auto=format&fit=crop&q=60'
     },
     {
         id: 'APP005',
         name: 'Induction Cooktop',
         productCode: 'CH-APP005',
+        categoryCode: 'APP',
         subCategory: 'Kitchen',
         description: '2000W electromagnetic induction stove with preset Indian cooking menus.',
         price: 2499,
@@ -74,12 +84,14 @@ const DEFAULT_APPLIANCES = [
         discount: '37% OFF',
         rating: '4.3',
         ratingCount: 240,
-        isKitchen: true
+        isKitchen: true,
+        imageUrl: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=500&auto=format&fit=crop&q=60'
     },
     {
         id: 'APP006',
         name: 'Toaster',
         productCode: 'CH-APP006',
+        categoryCode: 'APP',
         subCategory: 'Kitchen',
         description: '2-slice pop-up toaster with 7 variable browning controls and removable crumb tray.',
         price: 1499,
@@ -87,12 +99,14 @@ const DEFAULT_APPLIANCES = [
         discount: '34% OFF',
         rating: '4.2',
         ratingCount: 190,
-        isKitchen: true
+        isKitchen: true,
+        imageUrl: 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=500&auto=format&fit=crop&q=60'
     },
     {
         id: 'APP007',
         name: 'Hand Blender',
         productCode: 'CH-APP007',
+        categoryCode: 'APP',
         subCategory: 'Kitchen',
         description: 'Ergonomic 400W immersion hand blender with dual-speed control and stainless steel blades.',
         price: 1299,
@@ -100,12 +114,14 @@ const DEFAULT_APPLIANCES = [
         discount: '31% OFF',
         rating: '4.5',
         ratingCount: 275,
-        isKitchen: true
+        isKitchen: true,
+        imageUrl: 'https://images.unsplash.com/photo-1589739900243-4b52cd9b104e?w=500&auto=format&fit=crop&q=60'
     },
     {
         id: 'APP008',
         name: 'Rice Cooker',
         productCode: 'CH-APP008',
+        categoryCode: 'APP',
         subCategory: 'Kitchen',
         description: 'Automatic electric rice cooker with keep-warm function and anodized aluminum bowl.',
         price: 2199,
@@ -113,12 +129,14 @@ const DEFAULT_APPLIANCES = [
         discount: '33% OFF',
         rating: '4.4',
         ratingCount: 160,
-        isKitchen: true
+        isKitchen: true,
+        imageUrl: 'https://images.unsplash.com/photo-1544233726-9f1d2b27be8b?w=500&auto=format&fit=crop&q=60'
     },
     {
         id: 'APP009',
         name: 'Coffee Maker',
         productCode: 'CH-APP009',
+        categoryCode: 'APP',
         subCategory: 'Kitchen',
         description: 'Drip espresso & filter coffee brewer with reusable mesh filter and anti-drip valve.',
         price: 3899,
@@ -128,12 +146,14 @@ const DEFAULT_APPLIANCES = [
         ratingCount: 310,
         badge: 'Top Rated',
         badgeClass: 'badge-tag toprated',
-        isKitchen: true
+        isKitchen: true,
+        imageUrl: 'https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?w=500&auto=format&fit=crop&q=60'
     },
     {
         id: 'APP010',
         name: 'Sandwich Maker',
         productCode: 'CH-APP010',
+        categoryCode: 'APP',
         subCategory: 'Kitchen',
         description: 'Non-stick grill plates with thermostatic temperature control for crispy grilled sandwiches.',
         price: 1399,
@@ -141,12 +161,14 @@ const DEFAULT_APPLIANCES = [
         discount: '36% OFF',
         rating: '4.3',
         ratingCount: 220,
-        isKitchen: true
+        isKitchen: true,
+        imageUrl: 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=500&auto=format&fit=crop&q=60'
     },
     {
         id: 'APP011',
         name: 'Electric Iron',
         productCode: 'CH-APP011',
+        categoryCode: 'APP',
         subCategory: 'Home Care',
         description: 'Lightweight dry iron with American non-stick coating and 360-degree swivel cord.',
         price: 899,
@@ -154,12 +176,14 @@ const DEFAULT_APPLIANCES = [
         discount: '40% OFF',
         rating: '4.3',
         ratingCount: 520,
-        isHomeCare: true
+        isHomeCare: true,
+        imageUrl: 'https://images.unsplash.com/photo-1489274495757-95c7c837b101?w=500&auto=format&fit=crop&q=60'
     },
     {
         id: 'APP012',
         name: 'Room Heater',
         productCode: 'CH-APP012',
+        categoryCode: 'APP',
         subCategory: 'Climate',
         description: 'PTC ceramic oscillating room heater with dual wattage heat settings and overheat trip.',
         price: 1899,
@@ -167,12 +191,14 @@ const DEFAULT_APPLIANCES = [
         discount: '36% OFF',
         rating: '4.4',
         ratingCount: 195,
-        isClimate: true
+        isClimate: true,
+        imageUrl: 'https://images.unsplash.com/photo-1545259741-2ea3ebf61fa3?w=500&auto=format&fit=crop&q=60'
     },
     {
         id: 'APP013',
         name: 'Air Purifier',
         productCode: 'CH-APP013',
+        categoryCode: 'APP',
         subCategory: 'Climate',
         description: 'True HEPA H13 filtration removes 99.97% of PM2.5 pollutants, allergens, and odors.',
         price: 8499,
@@ -182,12 +208,14 @@ const DEFAULT_APPLIANCES = [
         ratingCount: 340,
         badge: 'Festive Deal',
         badgeClass: 'badge-tag festivedeal',
-        isClimate: true
+        isClimate: true,
+        imageUrl: 'https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=500&auto=format&fit=crop&q=60'
     },
     {
         id: 'APP014',
         name: 'Robot Vacuum',
         productCode: 'CH-APP014',
+        categoryCode: 'APP',
         subCategory: 'Cleaning',
         description: 'Smart LiDAR navigation 2-in-1 sweeping and mopping robot with smartphone app integration.',
         price: 18999,
@@ -197,12 +225,14 @@ const DEFAULT_APPLIANCES = [
         ratingCount: 410,
         badge: 'Best Seller',
         badgeClass: 'badge-tag bestseller',
-        isCleaning: true
+        isCleaning: true,
+        imageUrl: 'https://images.unsplash.com/photo-1558317374-067fb5f30001?w=500&auto=format&fit=crop&q=60'
     },
     {
         id: 'APP015',
         name: 'Portable Fan',
         productCode: 'CH-APP015',
+        categoryCode: 'APP',
         subCategory: 'Climate',
         description: 'Rechargeable ultra-quiet high velocity table fan with 4 speed modes and USB-C charging.',
         price: 999,
@@ -210,7 +240,8 @@ const DEFAULT_APPLIANCES = [
         discount: '37% OFF',
         rating: '4.2',
         ratingCount: 290,
-        isClimate: true
+        isClimate: true,
+        imageUrl: 'https://images.unsplash.com/photo-1565151443833-29bf2ba5dd8d?w=500&auto=format&fit=crop&q=60'
     }
 ];
 
@@ -264,7 +295,10 @@ export default class AppliancesPage extends NavigationMixin(LightningElement) {
                         rating: fallback.rating || '4.5',
                         ratingCount: fallback.ratingCount || 100,
                         badge: fallback.badge || null,
-                        badgeClass: fallback.badgeClass || null
+                        badgeClass: fallback.badgeClass || null,
+                        imageUrl: (p.Image_URL__c && !p.Image_URL__c.includes('placehold.co'))
+                            ? p.Image_URL__c
+                            : (fallback.imageUrl || 'https://images.unsplash.com/photo-1585659722983-3a675dabf23d?w=500&auto=format&fit=crop&q=60')
                     };
                 });
             }
@@ -358,37 +392,75 @@ export default class AppliancesPage extends NavigationMixin(LightningElement) {
 
     handleProductClick(event) {
         const productId = event.currentTarget.dataset.id;
-        this[NavigationMixin.Navigate]({
-            type: 'comm__namedPage',
-            attributes: { name: 'Product_Detail' },
-            state: { productId }
-        });
-    }
+        const urlSlug = `/appliances/products/${productId}`;
 
-    handleHomeClick(event) {
-        if (event && event.preventDefault) event.preventDefault();
-        this[NavigationMixin.Navigate]({
-            type: 'comm__namedPage',
-            attributes: { name: 'Home' }
-        });
-    }
-
-    handleAddToCart(event) {
-        event.stopPropagation();
-        const productId = event.currentTarget.dataset.id;
-        const prod = this._allProducts.find((p) => p.id === productId);
-        const name = prod ? prod.name : 'Item';
-
-        // Dispatch cart sync event across components
-        document.dispatchEvent(
-            new CustomEvent('commercehubcartupdate', {
-                detail: { count: 1, productId },
+        this.dispatchEvent(
+            new CustomEvent('productselect', {
+                detail: { productId, category: 'appliances', url: urlSlug },
                 bubbles: true,
                 composed: true
             })
         );
 
+        const isLocalDev = typeof window !== 'undefined' && 
+            window.location && 
+            window.location.href && 
+            window.location.href.includes('localdev-preview');
+        if (!isLocalDev) {
+            try {
+                this[NavigationMixin.Navigate]({
+                    type: 'standard__webPage',
+                    attributes: { url: urlSlug }
+                });
+            } catch (err) {
+                console.warn('[AppliancesPage] Product navigation error:', err);
+            }
+        }
+    }
+
+    handleHomeClick(event) {
+        if (event && event.preventDefault) event.preventDefault();
+        this.dispatchEvent(new CustomEvent('backtohome', { bubbles: true, composed: true }));
+        const isLocalDev = typeof window !== 'undefined' && 
+            window.location && 
+            window.location.href && 
+            window.location.href.includes('localdev-preview');
+        if (!isLocalDev) {
+            try {
+                this[NavigationMixin.Navigate]({
+                    type: 'comm__namedPage',
+                    attributes: { name: 'Home' }
+                });
+            } catch (err) {
+                console.warn('[AppliancesPage] Home navigation error:', err);
+            }
+        }
+    }
+
+    handleAddToCart(event) {
+        event.stopPropagation();
+        const productId = event.currentTarget.dataset.id;
+        const prod = this._allProducts.find((p) => p.id === productId || p.Id === productId);
+        const name = prod ? (prod.name || prod.Name) : 'Item';
+
+        if (prod) {
+            addToCart(prod, 1);
+        } else {
+            document.dispatchEvent(
+                new CustomEvent('commercehubcartupdate', {
+                    detail: { count: 1, productId },
+                    bubbles: true,
+                    composed: true
+                })
+            );
+        }
+
         this._showFeedback(`${name} added to cart!`);
+    }
+
+    handleImageError(event) {
+        event.target.onerror = null;
+        event.target.src = 'https://images.unsplash.com/photo-1585659722983-3a675dabf23d?w=500&auto=format&fit=crop&q=60';
     }
 
     _showFeedback(msg) {

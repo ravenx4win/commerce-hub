@@ -1,0 +1,562 @@
+/* ==========================================================================
+   Commerce Hub — Login Page Styles
+   Clean, modern, premium authentication layout
+   ========================================================================== */
+
+:host {
+    display: block;
+    width: 100%;
+    min-height: calc(100vh - 120px);
+    background-color: #f8fafc;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    color: #1e293b;
+}
+
+.login-page-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 16px 20px 60px;
+    box-sizing: border-box;
+}
+
+/* ── Breadcrumb Bar ─────────────────────────────────────────── */
+.login-breadcrumb-bar {
+    margin-bottom: 24px;
+}
+
+.breadcrumb-inner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.875rem;
+    color: #64748b;
+}
+
+.breadcrumb-link {
+    background: none;
+    border: none;
+    padding: 0;
+    color: #2563eb;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 0.15s ease;
+}
+
+.breadcrumb-link:hover {
+    color: #1d4ed8;
+    text-decoration: underline;
+}
+
+.breadcrumb-separator {
+    color: #cbd5e1;
+}
+
+.breadcrumb-current {
+    color: #334155;
+    font-weight: 600;
+}
+
+/* ── Main Layout (Card + Perks) ─────────────────────────────── */
+.login-main-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 32px;
+    align-items: start;
+}
+
+@media (max-width: 900px) {
+    .login-main-wrapper {
+        grid-template-columns: 1fr;
+    }
+    .login-perks-card {
+        display: none;
+    }
+}
+
+/* ── Login Card ─────────────────────────────────────────────── */
+.login-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 40px;
+    box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+}
+
+@media (max-width: 600px) {
+    .login-card {
+        padding: 24px 20px;
+    }
+}
+
+/* Header */
+.login-header {
+    text-align: left;
+    margin-bottom: 28px;
+}
+
+.brand-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.brand-icon {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2563eb, #38bdf8);
+    box-shadow: 0 0 8px rgba(37, 99, 235, 0.5);
+}
+
+.brand-title {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #2563eb;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.login-heading {
+    font-size: 1.875rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 8px;
+    letter-spacing: -0.02em;
+}
+
+.login-subheading {
+    font-size: 0.95rem;
+    color: #64748b;
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Alerts */
+.login-alert {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.alert-error {
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+}
+
+.alert-success {
+    background-color: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #15803d;
+}
+
+.alert-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+/* ── 1-Click Fast Customer Login ────────────────────────────── */
+.demo-login-box {
+    background: linear-gradient(135deg, #eff6ff 0%, #f0fdfa 100%);
+    border: 1px solid #bfdbfe;
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-bottom: 24px;
+}
+
+.demo-box-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.demo-badge {
+    background-color: #2563eb;
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.demo-tip {
+    font-size: 0.8rem;
+    color: #0284c7;
+    font-weight: 500;
+}
+
+.demo-desc {
+    font-size: 0.875rem;
+    color: #334155;
+    margin: 0 0 14px;
+    line-height: 1.4;
+}
+
+.btn-demo-login {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    background-color: #ffffff;
+    color: #1d4ed8;
+    border: 1.5px solid #93c5fd;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.08);
+    transition: all 0.2s ease;
+}
+
+.btn-demo-login:hover:not(:disabled) {
+    background-color: #2563eb;
+    color: #ffffff;
+    border-color: #2563eb;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+    transform: translateY(-1px);
+}
+
+.btn-demo-login:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-icon {
+    width: 18px;
+    height: 18px;
+}
+
+/* ── Divider ────────────────────────────────────────────────── */
+.or-divider {
+    position: relative;
+    text-align: center;
+    margin: 24px 0;
+}
+
+.or-divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: #e2e8f0;
+}
+
+.divider-text {
+    position: relative;
+    background: #ffffff;
+    padding: 0 14px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #94a3b8;
+    letter-spacing: 0.05em;
+}
+
+/* ── Form Inputs ────────────────────────────────────────────── */
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #334155;
+}
+
+.password-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn-link-sm {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 0.8rem;
+    color: #2563eb;
+    cursor: pointer;
+    font-weight: 500;
+    transition: color 0.15s ease;
+}
+
+.btn-link-sm:hover {
+    color: #1d4ed8;
+    text-decoration: underline;
+}
+
+.input-with-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.field-icon {
+    position: absolute;
+    left: 14px;
+    width: 18px;
+    height: 18px;
+    color: #94a3b8;
+    pointer-events: none;
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px 14px 12px 42px;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    color: #0f172a;
+    background-color: #ffffff;
+    box-sizing: border-box;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.password-toggle-btn {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    padding: 4px;
+    color: #94a3b8;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s ease;
+}
+
+.password-toggle-btn:hover {
+    color: #475569;
+}
+
+.toggle-icon {
+    width: 18px;
+    height: 18px;
+}
+
+/* Remember Me Checkbox */
+.form-options-row {
+    display: flex;
+    align-items: center;
+    margin-top: -4px;
+}
+
+.checkbox-container {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: #475569;
+    user-select: none;
+}
+
+.checkbox-container input {
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
+    accent-color: #2563eb;
+}
+
+/* Submit Button */
+.btn-submit {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    background-color: #2563eb;
+    color: #ffffff;
+    border: none;
+    padding: 14px 20px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+    transition: all 0.2s ease;
+    margin-top: 8px;
+}
+
+.btn-submit:hover:not(:disabled) {
+    background-color: #1d4ed8;
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+    transform: translateY(-1px);
+}
+
+.btn-submit:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.submit-arrow {
+    width: 18px;
+    height: 18px;
+    transition: transform 0.15s ease;
+}
+
+.btn-submit:hover:not(:disabled) .submit-arrow {
+    transform: translateX(3px);
+}
+
+/* Spinner */
+.spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Footer Actions */
+.login-footer {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #f1f5f9;
+    text-align: center;
+}
+
+.signup-prompt {
+    font-size: 0.9rem;
+    color: #64748b;
+    margin: 0 0 16px;
+}
+
+.btn-link-accent {
+    background: none;
+    border: none;
+    padding: 0;
+    color: #2563eb;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    margin-left: 4px;
+}
+
+.btn-link-accent:hover {
+    color: #1d4ed8;
+    text-decoration: underline;
+}
+
+.return-nav-wrap {
+    margin-top: 8px;
+}
+
+.btn-text-nav {
+    background: none;
+    border: none;
+    color: #64748b;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 0.15s ease;
+}
+
+.btn-text-nav:hover {
+    color: #0f172a;
+}
+
+/* ── Benefits Card ──────────────────────────────────────────── */
+.login-perks-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 32px 28px;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
+}
+
+.perks-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 20px;
+}
+
+.perks-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.perk-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.perk-icon-wrap {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background-color: #eff6ff;
+    color: #2563eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.perk-icon-wrap svg {
+    width: 18px;
+    height: 18px;
+}
+
+.perk-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.perk-text strong {
+    font-size: 0.9rem;
+    color: #0f172a;
+}
+
+.perk-text span {
+    font-size: 0.825rem;
+    color: #64748b;
+    line-height: 1.4;
+}

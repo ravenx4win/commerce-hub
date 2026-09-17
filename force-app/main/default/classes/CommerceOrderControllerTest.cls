@@ -37,6 +37,13 @@ private class CommerceOrderControllerTest {
         );
         insert variant;
 
+        Inventory__c inv = new Inventory__c(
+            Product_Variant__c = variant.Id,
+            Available_Stock__c = 100,
+            Active__c = true
+        );
+        insert inv;
+
         // 2. Accounts & Contacts for two distinct customers
         Account acc1 = new Account(Name = 'Customer One Account');
         Account acc2 = new Account(Name = 'Customer Two Account');
@@ -474,4 +481,78 @@ private class CommerceOrderControllerTest {
             System.assert(!cust1OrderIds.contains(o.Id), 'Customer 2 orders must never overlap Customer 1 orders.');
         }
     }
+
+    @IsTest
+    static void saveNewAddress_createsAndReturnsAddress() {
+        User customer1 = getCustomerUser('One');
+        Customer_Address__c result;
+
+        Test.startTest();
+        System.runAs(customer1) {
+            Map<String, Object> fields = new Map<String, Object>{
+                'Street__c' => '456 Marine Drive',
+                'City__c' => 'Mumbai',
+                'State__c' => 'Maharashtra',
+                'Postal_Code__c' => '400020',
+                'Country__c' => 'India',
+                'Is_Default__c' => false
+            };
+            result = CommerceOrderController.saveNewAddress(fields);
+        }
+        Test.stopTest();
+
+        System.assertNotEquals(null, result, 'Expected saved address to be returned');
+        System.assertNotEquals(null, result.Id, 'Expected record Id on saved address');
+        System.assertEquals('456 Marine Drive', result.Street__c, 'Street should match');
+    }
+
+    @IsTest
+    static void placeOrder_emptyCart_throwsException() {
+        User customer1 = getCustomerUser('One');
+        Customer_Address__c addr = [SELECT Id FROM Customer_Address__c WHERE Contact__c = :customer1.ContactId AND Is_Default__c = true LIMIT 1];
+
+        Boolean exceptionThrown = false;
+        Test.startTest();
+        System.runAs(customer1) {
+            try {
+                CommerceOrderController.placeOrder(
+                    new List<CommerceOrderService.CartItemRequest>(),
+                    addr.Id,
+                    'UPI'
+                );
+            } catch (AuraHandledException e) {
+                exceptionThrown = true;
+            }
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, exceptionThrown, 'Empty cart should throw AuraHandledException');
+    }
+
+    @IsTest
+    static void placeOrder_withProduct2Id_resolvesVariantAndPlacesOrder() {
+        User customer1 = getCustomerUser('One');
+        Customer_Address__c addr = [SELECT Id FROM Customer_Address__c WHERE Contact__c = :customer1.ContactId AND Is_Default__c = true LIMIT 1];
+        Product2 prod = [SELECT Id FROM Product2 WHERE Name = 'Smartphone' LIMIT 1];
+
+        CommerceOrderService.CartItemRequest item = new CommerceOrderService.CartItemRequest();
+        item.productVariantId = prod.Id; // Passing Product2 ID
+        item.quantity = 1;
+
+        Test.startTest();
+        CommerceOrderService.CheckoutResult result;
+        System.runAs(customer1) {
+            result = CommerceOrderController.placeOrder(
+                new List<CommerceOrderService.CartItemRequest>{ item },
+                addr.Id,
+                'Card'
+            );
+        }
+        Test.stopTest();
+
+        System.assertNotEquals(null, result, 'Order should be created');
+        System.assertNotEquals(null, result.orderId, 'Order ID should be returned');
+        System.assertEquals('Confirmed', result.orderStatus);
+    }
 }
+

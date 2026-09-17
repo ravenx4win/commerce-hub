@@ -1,0 +1,255 @@
+<template>
+    <div class="product-detail-page">
+        <!-- Toast Feedback Notification -->
+        <template if:true={showToast}>
+            <div class="pdp-toast" role="status" aria-live="polite">
+                <div class="toast-content">
+                    <svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>{toastMessage}</span>
+                </div>
+            </div>
+        </template>
+
+        <!-- Breadcrumb Navigation -->
+        <nav class="pdp-breadcrumb" aria-label="Breadcrumb">
+            <div class="breadcrumb-container">
+                <a href="#/" class="breadcrumb-link" onclick={handleHomeClick}>Home</a>
+                <span class="breadcrumb-separator" aria-hidden="true">/</span>
+                <a href={categoryHref} class="breadcrumb-link" onclick={handleCategoryClick}>{categoryDisplayName}</a>
+                <span class="breadcrumb-separator" aria-hidden="true">/</span>
+                <span class="breadcrumb-current" aria-current="page">{productName}</span>
+            </div>
+        </nav>
+
+        <!-- Loading State -->
+        <template if:true={isLoading}>
+            <div class="pdp-loading-container" aria-busy="true">
+                <div class="pdp-spinner"></div>
+                <p class="loading-text">Loading product details...</p>
+            </div>
+        </template>
+
+        <!-- Error / Not Found State -->
+        <template if:true={isError}>
+            <div class="pdp-not-found-container">
+                <div class="not-found-card">
+                    <div class="not-found-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                    </div>
+                    <h2 class="not-found-title">Product Unavailable</h2>
+                    <p class="not-found-desc">
+                        We couldn't locate this product in the {categoryDisplayName} collection or it may currently be inactive.
+                    </p>
+                    <div class="not-found-actions">
+                        <button class="btn-primary" onclick={handleCategoryClick}>
+                            Browse {categoryDisplayName}
+                        </button>
+                        <button class="btn-secondary" onclick={handleHomeClick}>
+                            Go to Storefront
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Main Product Content -->
+        <template if:true={hasProductData}>
+            <div class="pdp-main-container">
+                <div class="pdp-grid">
+                    
+                    <!-- Left Column: Media Gallery -->
+                    <div class="pdp-gallery-column">
+                        <div class="main-image-viewport">
+                            <img
+                                src={activeImageUrl}
+                                alt={activeImageAlt}
+                                class="main-image"
+                                onerror={handleImageError}
+                            />
+                            <template if:true={isStockActive}>
+                                <div class="badge-tag in-stock-badge">
+                                    <span class="status-dot"></span> In Stock
+                                </div>
+                            </template>
+                        </div>
+
+                        <!-- Gallery Thumbnails -->
+                        <template if:true={hasMultipleImages}>
+                            <div class="thumbnails-track" role="tablist" aria-label="Product image thumbnails">
+                                <template for:each={galleryImages} for:item="img">
+                                    <button
+                                        key={img.id}
+                                        class={img.cssClass}
+                                        onclick={handleThumbnailClick}
+                                        data-url={img.url}
+                                        data-id={img.id}
+                                        role="tab"
+                                        aria-label={img.alt}
+                                        aria-selected={img.isSelected}
+                                    >
+                                        <img src={img.url} alt={img.alt} class="thumb-img" onerror={handleThumbError} />
+                                    </button>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Right Column: Product Information & Purchase Actions -->
+                    <div class="pdp-info-column">
+                        
+                        <!-- Category Tag & Product Code -->
+                        <div class="product-meta-header">
+                            <span class="category-pill">{categoryDisplayName}</span>
+                            <span class="sku-label">SKU: <strong>{currentSku}</strong></span>
+                        </div>
+
+                        <!-- Product Title -->
+                        <h1 class="pdp-product-title">{productName}</h1>
+
+                        <!-- Price Section -->
+                        <div class="pdp-price-section">
+                            <div class="price-row">
+                                <span class="current-price">{formattedPrice}</span>
+                                <template if:true={hasOriginalPrice}>
+                                    <span class="original-price">{formattedOriginalPrice}</span>
+                                </template>
+                            </div>
+                            <span class="tax-info">Inclusive of all taxes</span>
+                        </div>
+
+                        <hr class="pdp-divider" />
+
+                        <!-- Variant Selectors (Color / Size / General Variants) -->
+                        <template if:true={hasVariants}>
+                            <div class="pdp-variants-section">
+                                <div class="section-heading">
+                                    <span class="heading-text">Available Options</span>
+                                    <span class="selected-variant-name">{selectedVariantName}</span>
+                                </div>
+
+                                <div class="variants-pills" role="radiogroup" aria-label="Select variant">
+                                    <template for:each={formattedVariants} for:item="v">
+                                        <button
+                                            key={v.id}
+                                            class={v.cssClass}
+                                            onclick={handleVariantSelect}
+                                            data-id={v.id}
+                                            role="radio"
+                                            aria-checked={v.isSelected}
+                                        >
+                                            <span class="variant-pill-title">{v.label}</span>
+                                            <span class="variant-pill-price">{v.formattedPrice}</span>
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <hr class="pdp-divider" />
+                        </template>
+
+                        <!-- Delivery Location Summary -->
+                        <div class="pdp-delivery-box">
+                            <div class="delivery-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z" />
+                                    <circle cx="12" cy="10" r="3" />
+                                </svg>
+                            </div>
+                            <div class="delivery-info">
+                                <span class="delivery-title">Deliver to: <strong>{deliveryLocationSummary}</strong></span>
+                                <span class="delivery-subtext">Standard Delivery Available</span>
+                            </div>
+                        </div>
+
+                        <!-- Quantity Selector & Add to Cart -->
+                        <div class="pdp-actions-section">
+                            <div class="quantity-control-group">
+                                <label class="qty-label" for="quantity-display">Quantity</label>
+                                <div class="qty-stepper">
+                                    <button
+                                        class="qty-btn"
+                                        onclick={handleDecreaseQuantity}
+                                        disabled={isMinQuantity}
+                                        aria-label="Decrease quantity"
+                                    >
+                                        -
+                                    </button>
+                                    <span id="quantity-display" class="qty-value">{quantity}</span>
+                                    <button
+                                        class="qty-btn"
+                                        onclick={handleIncreaseQuantity}
+                                        disabled={isMaxQuantity}
+                                        aria-label="Increase quantity"
+                                    >
+                                        +
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="cta-group">
+                                <button
+                                    class="add-to-cart-btn"
+                                    onclick={handleAddToCart}
+                                    disabled={isAddToCartDisabled}
+                                >
+                                    <svg class="cart-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="9" cy="21" r="1" />
+                                        <circle cx="20" cy="21" r="1" />
+                                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                                    </svg>
+                                    <span>Add to Cart</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <hr class="pdp-divider" />
+
+                        <!-- Product Description -->
+                        <div class="pdp-description-section">
+                            <h2 class="section-title">Product Description</h2>
+                            <p class="description-body">{productDescription}</p>
+                        </div>
+
+                        <!-- Product Specifications / Details Table -->
+                        <div class="pdp-specs-section">
+                            <h2 class="section-title">Specifications</h2>
+                            <div class="specs-table">
+                                <div class="spec-row">
+                                    <span class="spec-name">Category</span>
+                                    <span class="spec-val">{categoryDisplayName}</span>
+                                </div>
+                                <div class="spec-row">
+                                    <span class="spec-name">Product Code</span>
+                                    <span class="spec-val">{productCode}</span>
+                                </div>
+                                <template if:true={selectedVariantColor}>
+                                    <div class="spec-row">
+                                        <span class="spec-name">Color</span>
+                                        <span class="spec-val">{selectedVariantColor}</span>
+                                    </div>
+                                </template>
+                                <template if:true={selectedVariantSize}>
+                                    <div class="spec-row">
+                                        <span class="spec-name">Size / Capacity</span>
+                                        <span class="spec-val">{selectedVariantSize}</span>
+                                    </div>
+                                </template>
+                                <div class="spec-row">
+                                    <span class="spec-name">Availability</span>
+                                    <span class="spec-val status-text-in-stock">Available to Order</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

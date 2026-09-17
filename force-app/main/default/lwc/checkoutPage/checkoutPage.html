@@ -1,0 +1,761 @@
+<template>
+    <div class="checkout-page-container">
+        <!-- Progress / Context Bar -->
+        <nav class="checkout-steps-nav" aria-label="Checkout Progress">
+            <div class="step-item step-completed" onclick={handleBackToCart}>
+                <span class="step-badge">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="check-icon">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </span>
+                <span class="step-text">Cart</span>
+            </div>
+            <div class="step-separator"></div>
+            <div class={stepCheckoutClass}>
+                <span class="step-badge">2</span>
+                <span class="step-text">Checkout</span>
+            </div>
+            <div class="step-separator"></div>
+            <div class={stepConfirmationClass}>
+                <span class="step-badge">3</span>
+                <span class="step-text">Order Confirmation</span>
+            </div>
+        </nav>
+
+        <!-- EMPTY CART STATE -->
+        <template if:true={isEmptyCart}>
+            <div class="empty-checkout-card">
+                <div class="empty-icon-wrap">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <circle cx="9" cy="21" r="1"></circle>
+                        <circle cx="20" cy="21" r="1"></circle>
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                    </svg>
+                </div>
+                <h2 class="empty-title">Your Cart is Empty</h2>
+                <p class="empty-desc">
+                    You do not have any items in your shopping cart to checkout.
+                </p>
+                <div class="empty-actions">
+                    <button class="btn-primary" onclick={handleContinueShopping}>
+                        Continue Shopping
+                    </button>
+                    <button class="btn-secondary" onclick={handleBackToCart}>
+                        View Cart
+                    </button>
+                </div>
+            </div>
+        </template>
+
+        <!-- ORDER CONFIRMATION VIEW (SUCCESS) -->
+        <template if:true={isSuccess}>
+            <div class="confirmation-card">
+                <div class="success-hero">
+                    <div class="success-icon-wrap">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                    </div>
+                    <h1 class="success-headline">Order Placed Successfully!</h1>
+                    <p class="success-subtext">
+                        Thank you for your purchase with Commerce Hub. Your order has been placed and is being processed.
+                    </p>
+                    <div class="order-ref-pill">
+                        <span class="order-ref-label">Order Reference:</span>
+                        <strong class="order-ref-val">{confirmedOrderRef}</strong>
+                    </div>
+                </div>
+
+                <div class="confirmation-details-grid">
+                    <!-- Delivery Details -->
+                    <div class="detail-box">
+                        <h3 class="detail-box-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="box-icon">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
+                            Delivery Address
+                        </h3>
+                        <template if:true={confirmedAddress}>
+                            <p class="addr-line"><strong>{confirmedAddress.Street__c}</strong></p>
+                            <p class="addr-line">{confirmedAddress.City__c}, {confirmedAddress.State__c} {confirmedAddress.Postal_Code__c}</p>
+                            <p class="addr-line">{confirmedAddress.Country__c}</p>
+                        </template>
+                        <template if:false={confirmedAddress}>
+                            <p class="addr-line">Standard Delivery to Selected Address</p>
+                        </template>
+                    </div>
+
+                    <!-- Payment Details -->
+                    <div class="detail-box">
+                        <h3 class="detail-box-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="box-icon">
+                                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                                <line x1="1" y1="10" x2="23" y2="10"></line>
+                            </svg>
+                            Payment Information
+                        </h3>
+                        <p class="payment-line">
+                            Method: <strong>{selectedPaymentMethod}</strong>
+                        </p>
+                        <p class="payment-line">
+                            Status: <span class="badge-status-paid">{confirmedPaymentStatus}</span>
+                        </p>
+                        <template if:true={confirmedStripeTxId}>
+                            <p class="payment-line stripe-tx-line">
+                                Stripe Ref: <code class="stripe-tx-code">{confirmedStripeTxId}</code>
+                            </p>
+                        </template>
+                        <p class="payment-line">
+                            Total Paid: <strong>₹{formattedConfirmedTotal}</strong>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Items Ordered Summary -->
+                <template if:true={hasConfirmedItems}>
+                    <div class="confirmed-items-section">
+                        <h3 class="detail-box-title">Items Ordered ({confirmedItemCount})</h3>
+                        <div class="confirmed-items-list">
+                            <template for:each={confirmedItems} for:item="item">
+                                <div key={item.id} class="confirmed-item-row">
+                                    <img src={item.imageUrl} alt={item.name} class="confirmed-item-img" onerror={handleImageFallback} />
+                                    <div class="confirmed-item-info">
+                                        <p class="confirmed-item-name">{item.name}</p>
+                                        <p class="confirmed-item-meta">Qty: {item.quantity} &times; ₹{item.price}</p>
+                                    </div>
+                                    <span class="confirmed-item-total">₹{item.itemTotal}</span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+
+                <div class="confirmation-actions">
+                    <button class="btn-primary btn-large" onclick={handleViewOrders}>
+                        View in My Orders
+                    </button>
+                    <button class="btn-secondary" onclick={handleContinueShopping}>
+                        Continue Shopping
+                    </button>
+                    <button class="btn-text-link" onclick={handleBackToHome}>
+                        Return to Storefront
+                    </button>
+                </div>
+            </div>
+        </template>
+
+        <!-- MAIN ACTIVE CHECKOUT VIEW -->
+        <template if:true={isCheckoutActive}>
+            <!-- Global Alert / Error Message -->
+            <template if:true={errorMessage}>
+                <div class="error-banner" role="alert">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="error-icon">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <span>{errorMessage}</span>
+                </div>
+            </template>
+
+            <!-- Guest User Sign-In Notice -->
+            <template if:true={isGuestUser}>
+                <div class="guest-login-banner" role="region" aria-label="Customer login notice">
+                    <div class="guest-login-content">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="guest-login-icon">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <div class="guest-login-text">
+                            <strong>Have a Commerce Hub customer account?</strong>
+                            <span>Log in to access your saved delivery addresses and complete checkout.</span>
+                        </div>
+                    </div>
+                    <button class="btn-primary btn-sm btn-login-checkout" onclick={handleLoginRedirect}>
+                        Log In
+                    </button>
+                </div>
+            </template>
+
+            <div class="checkout-layout">
+                <!-- LEFT COLUMN: Steps (Address, Items, Payment) -->
+                <div class="checkout-main-column">
+                    <!-- SECTION 1: DELIVERY ADDRESS -->
+                    <section class="checkout-card" aria-labelledby="address-section-heading">
+                        <div class="card-header">
+                            <div class="step-num">1</div>
+                            <h2 id="address-section-heading" class="card-title">Delivery Address</h2>
+                        </div>
+                        <div class="card-body">
+                            <!-- Saved Addresses List -->
+                            <template if:true={hasSavedAddresses}>
+                                <div class="addresses-grid">
+                                    <template for:each={savedAddresses} for:item="addr">
+                                        <div
+                                            key={addr.Id}
+                                            class={addr.cardClass}
+                                            onclick={handleSelectAddress}
+                                            data-id={addr.Id}
+                                            role="radio"
+                                            aria-checked={addr.isSelected}
+                                            tabindex="0"
+                                        >
+                                            <div class="addr-card-top">
+                                                <div class="radio-circle">
+                                                    <template if:true={addr.isSelected}>
+                                                        <div class="radio-inner"></div>
+                                                    </template>
+                                                </div>
+                                                <div class="addr-badges">
+                                                    <template if:true={addr.Is_Default__c}>
+                                                        <span class="badge-default">DEFAULT</span>
+                                                    </template>
+                                                    <span class="badge-type">{addr.Address_Type__c}</span>
+                                                </div>
+                                            </div>
+                                            <div class="addr-card-body">
+                                                <p class="addr-street">{addr.Street__c}</p>
+                                                <p class="addr-locality">{addr.City__c}, {addr.State__c} - {addr.Postal_Code__c}</p>
+                                                <p class="addr-country">{addr.Country__c}</p>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+
+                            <template if:false={hasSavedAddresses}>
+                                <template if:false={showNewAddressForm}>
+                                    <div class="no-address-note">
+                                        <p>No saved shipping addresses found for your profile.</p>
+                                        <p class="no-address-sub">Add your delivery address below to continue.</p>
+                                    </div>
+                                </template>
+                            </template>
+
+                            <!-- Add New Address Button & Form -->
+                            <div class="add-address-section">
+                                <template if:false={showNewAddressForm}>
+                                    <button class="btn-outline" onclick={handleToggleNewAddressForm}>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
+                                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                                        </svg>
+                                        Add New Delivery Address
+                                    </button>
+                                </template>
+
+                                <!-- INLINE NEW ADDRESS FORM -->
+                                <template if:true={showNewAddressForm}>
+                                    <div class="new-address-form-box">
+                                        <div class="form-header">
+                                            <h3 class="form-title">Enter New Delivery Address</h3>
+                                            <button class="btn-text-close" onclick={handleToggleNewAddressForm} aria-label="Cancel">
+                                                &times;
+                                            </button>
+                                        </div>
+
+                                        <div class="form-grid">
+                                            <div class="form-group span-full">
+                                                <label class="form-label" for="street-input">Street Address *</label>
+                                                <input
+                                                    id="street-input"
+                                                    type="text"
+                                                    class="form-input"
+                                                    placeholder="Flat / House no., Apartment, Street address"
+                                                    value={newAddress.Street__c}
+                                                    data-field="Street__c"
+                                                    oninput={handleAddressFieldChange}
+                                                    required
+                                                />
+                                            </div>
+
+                                            <!-- Country (India) -->
+                                            <div class="form-group">
+                                                <label class="form-label" for="country-input">Country</label>
+                                                <input
+                                                    id="country-input"
+                                                    type="text"
+                                                    class="form-input"
+                                                    value={newAddress.Country__c}
+                                                    data-field="Country__c"
+                                                    readonly
+                                                />
+                                            </div>
+
+                                            <!-- Controlling Picklist: State / UT -->
+                                            <div class="form-group">
+                                                <label class="form-label" for="state-input">State / UT *</label>
+                                                <select
+                                                    id="state-input"
+                                                    class="form-input form-select"
+                                                    data-field="State__c"
+                                                    onchange={handleAddressFieldChange}
+                                                    required
+                                                >
+                                                    <option value="">-- Select State / UT --</option>
+                                                    <template for:each={stateOptions} for:item="opt">
+                                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                                    </template>
+                                                </select>
+                                            </div>
+
+                                            <!-- Dependent Picklist: City -->
+                                            <div class="form-group">
+                                                <label class="form-label" for="city-input">City *</label>
+                                                <select
+                                                    id="city-input"
+                                                    class="form-input form-select"
+                                                    data-field="City__c"
+                                                    onchange={handleAddressFieldChange}
+                                                    disabled={isCityDisabled}
+                                                    required
+                                                >
+                                                    <option value="">{cityPlaceholderText}</option>
+                                                    <template for:each={cityOptions} for:item="opt">
+                                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                                    </template>
+                                                </select>
+                                            </div>
+
+                                            <!-- PIN / Postal Code -->
+                                            <div class="form-group">
+                                                <label class="form-label" for="postal-input">PIN / Postal Code *</label>
+                                                <input
+                                                    id="postal-input"
+                                                    type="text"
+                                                    class="form-input"
+                                                    placeholder="6-digit PIN code"
+                                                    value={newAddress.Postal_Code__c}
+                                                    data-field="Postal_Code__c"
+                                                    oninput={handleAddressFieldChange}
+                                                    required
+                                                />
+                                            </div>
+
+                                            <div class="form-group span-full checkbox-group">
+                                                <label class="checkbox-label">
+                                                    <input
+                                                        type="checkbox"
+                                                        class="checkbox-input"
+                                                        checked={newAddress.Is_Default__c}
+                                                        data-field="Is_Default__c"
+                                                        onchange={handleAddressFieldChange}
+                                                    />
+                                                    <span>Set as default shipping address</span>
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-actions">
+                                            <button
+                                                class="btn-primary"
+                                                onclick={handleSaveNewAddress}
+                                                disabled={isSavingAddress}
+                                            >
+                                                <template if:false={isSavingAddress}>
+                                                    <span>Save & Deliver Here</span>
+                                                </template>
+                                                <template if:true={isSavingAddress}>
+                                                    <span>Saving...</span>
+                                                </template>
+                                            </button>
+                                            <button class="btn-secondary" onclick={handleToggleNewAddressForm}>
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SECTION 2: ORDER ITEMS REVIEW -->
+                    <section class="checkout-card" aria-labelledby="items-section-heading">
+                        <div class="card-header">
+                            <div class="step-num">2</div>
+                            <div class="header-title-wrap">
+                                <h2 id="items-section-heading" class="card-title">Order Items</h2>
+                                <span class="card-subtitle">{itemCountLabel} in your cart</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="items-list">
+                                <template for:each={cartItems} for:item="item">
+                                    <div key={item.id} class="checkout-item-row">
+                                        <img
+                                            src={item.imageUrl}
+                                            alt={item.name}
+                                            class="item-img"
+                                            onerror={handleImageFallback}
+                                        />
+                                        <div class="item-details">
+                                            <h4 class="item-name">{item.name}</h4>
+                                            <div class="item-meta">
+                                                <span class="item-qty">Qty: <strong>{item.quantity}</strong></span>
+                                                <span class="item-price">Unit: ₹{item.formattedPrice}</span>
+                                                <template if:true={item.sku}>
+                                                    <span class="item-sku">SKU: {item.sku}</span>
+                                                </template>
+                                            </div>
+                                        </div>
+                                        <div class="item-row-total">
+                                            <span class="item-total-val">₹{item.formattedItemTotal}</span>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <div class="cart-edit-link-wrap">
+                                <button class="btn-text-link" onclick={handleBackToCart}>
+                                    &larr; Return to Cart to modify items
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SECTION 3: PAYMENT METHOD -->
+                    <section class="checkout-card" aria-labelledby="payment-section-heading">
+                        <div class="card-header">
+                            <div class="step-num">3</div>
+                            <h2 id="payment-section-heading" class="card-title">Payment Method</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="payment-methods-grid">
+                                <!-- Option 1: Stripe (Test Mode) -->
+                                <div
+                                    class={stripeOptionClass}
+                                    onclick={handleSelectStripe}
+                                    role="radio"
+                                    aria-checked={isPaymentStripe}
+                                    tabindex="0"
+                                >
+                                    <div class="payment-option-header">
+                                        <div class="radio-circle">
+                                            <template if:true={isPaymentStripe}>
+                                                <div class="radio-inner"></div>
+                                            </template>
+                                        </div>
+                                        <div class="payment-title-wrap">
+                                            <div class="stripe-title-row">
+                                                <span class="payment-name">Stripe Secure Card</span>
+                                                <template if:true={isStripeTestMode}>
+                                                    <span class="stripe-badge-test">TEST MODE</span>
+                                                </template>
+                                            </div>
+                                            <span class="payment-desc">Global payments powered by Stripe (Visa, Mastercard, RuPay)</span>
+                                        </div>
+                                    </div>
+                                    <template if:true={isPaymentStripe}>
+                                        <div class="payment-subform stripe-subform">
+                                            <div class="stripe-test-banner">
+                                                <div class="stripe-banner-info">
+                                                    <span class="stripe-pill-env">Test Mode Active</span>
+                                                    <span class="stripe-banner-desc">Zero live charges. Test card numbers accepted.</span>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    class="btn-autofill-test"
+                                                    onclick={handleAutofillStripeTestCard}
+                                                >
+                                                    Fill Test Card
+                                                </button>
+                                            </div>
+
+                                            <div class="form-grid">
+                                                <div class="form-group span-full">
+                                                    <div class="label-with-brand">
+                                                        <label class="form-label" for="stripe-card-num">Card Number</label>
+                                                        <template if:true={stripeCardBrand}>
+                                                            <span class="card-brand-tag">{stripeCardBrand}</span>
+                                                        </template>
+                                                    </div>
+                                                    <input
+                                                        id="stripe-card-num"
+                                                        type="text"
+                                                        class="form-input card-num-input"
+                                                        placeholder="4242 4242 4242 4242"
+                                                        value={stripeCardData.cardNumber}
+                                                        data-stripefield="cardNumber"
+                                                        oninput={handleStripeFieldChange}
+                                                        maxlength="19"
+                                                    />
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="form-label" for="stripe-card-exp">Expiry (MM/YY)</label>
+                                                    <input
+                                                        id="stripe-card-exp"
+                                                        type="text"
+                                                        class="form-input"
+                                                        placeholder="MM/YY"
+                                                        value={stripeCardData.cardExpiry}
+                                                        data-stripefield="cardExpiry"
+                                                        oninput={handleStripeFieldChange}
+                                                        maxlength="5"
+                                                    />
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="form-label" for="stripe-card-cvc">CVC</label>
+                                                    <input
+                                                        id="stripe-card-cvc"
+                                                        type="password"
+                                                        class="form-input"
+                                                        placeholder="123"
+                                                        value={stripeCardData.cardCvv}
+                                                        data-stripefield="cardCvv"
+                                                        oninput={handleStripeFieldChange}
+                                                        maxlength="4"
+                                                    />
+                                                </div>
+                                                <div class="form-group span-full">
+                                                    <label class="form-label" for="stripe-card-name">Cardholder Name</label>
+                                                    <input
+                                                        id="stripe-card-name"
+                                                        type="text"
+                                                        class="form-input"
+                                                        placeholder="Jane Doe"
+                                                        value={stripeCardData.nameOnCard}
+                                                        data-stripefield="nameOnCard"
+                                                        oninput={handleStripeFieldChange}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                                <!-- Option 1: UPI -->
+                                <div
+                                    class={upiOptionClass}
+                                    onclick={handleSelectUpi}
+                                    role="radio"
+                                    aria-checked={isPaymentUpi}
+                                    tabindex="0"
+                                >
+                                    <div class="payment-option-header">
+                                        <div class="radio-circle">
+                                            <template if:true={isPaymentUpi}>
+                                                <div class="radio-inner"></div>
+                                            </template>
+                                        </div>
+                                        <div class="payment-title-wrap">
+                                            <span class="payment-name">UPI (GPay / PhonePe / Paytm)</span>
+                                            <span class="payment-desc">Instant & secure verification</span>
+                                        </div>
+                                    </div>
+                                    <template if:true={isPaymentUpi}>
+                                        <div class="payment-subform">
+                                            <label class="form-label" for="upi-id-input">Enter UPI ID (VPA)</label>
+                                            <input
+                                                id="upi-id-input"
+                                                type="text"
+                                                class="form-input upi-input"
+                                                placeholder="e.g. mobile@upi or username@oksbi"
+                                                value={upiId}
+                                                oninput={handleUpiIdChange}
+                                            />
+                                            <p class="subform-note">A payment simulation will be recorded on Order placement.</p>
+                                        </div>
+                                    </template>
+                                </div>
+
+                                <!-- Option 2: Card -->
+                                <div
+                                    class={cardOptionClass}
+                                    onclick={handleSelectCard}
+                                    role="radio"
+                                    aria-checked={isPaymentCard}
+                                    tabindex="0"
+                                >
+                                    <div class="payment-option-header">
+                                        <div class="radio-circle">
+                                            <template if:true={isPaymentCard}>
+                                                <div class="radio-inner"></div>
+                                            </template>
+                                        </div>
+                                        <div class="payment-title-wrap">
+                                            <span class="payment-name">Credit / Debit Card</span>
+                                            <span class="payment-desc">Visa, Mastercard, RuPay</span>
+                                        </div>
+                                    </div>
+                                    <template if:true={isPaymentCard}>
+                                        <div class="payment-subform">
+                                            <div class="form-grid">
+                                                <div class="form-group span-full">
+                                                    <label class="form-label" for="card-num-input">Card Number</label>
+                                                    <input
+                                                        id="card-num-input"
+                                                        type="text"
+                                                        class="form-input card-num-input"
+                                                        placeholder="4532 •••• •••• 8921"
+                                                        value={cardData.cardNumber}
+                                                        data-cardfield="cardNumber"
+                                                        oninput={handleCardFieldChange}
+                                                        maxlength="19"
+                                                    />
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="form-label" for="card-exp-input">Expiry Date</label>
+                                                    <input
+                                                        id="card-exp-input"
+                                                        type="text"
+                                                        class="form-input"
+                                                        placeholder="MM/YY"
+                                                        value={cardData.cardExpiry}
+                                                        data-cardfield="cardExpiry"
+                                                        oninput={handleCardFieldChange}
+                                                        maxlength="5"
+                                                    />
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="form-label" for="card-cvv-input">CVV</label>
+                                                    <input
+                                                        id="card-cvv-input"
+                                                        type="password"
+                                                        class="form-input"
+                                                        placeholder="123"
+                                                        value={cardData.cardCvv}
+                                                        data-cardfield="cardCvv"
+                                                        oninput={handleCardFieldChange}
+                                                        maxlength="4"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+
+                                <!-- Option 3: Cash on Delivery -->
+                                <div
+                                    class={codOptionClass}
+                                    onclick={handleSelectCod}
+                                    role="radio"
+                                    aria-checked={isPaymentCod}
+                                    tabindex="0"
+                                >
+                                    <div class="payment-option-header">
+                                        <div class="radio-circle">
+                                            <template if:true={isPaymentCod}>
+                                                <div class="radio-inner"></div>
+                                            </template>
+                                        </div>
+                                        <div class="payment-title-wrap">
+                                            <span class="payment-name">Cash on Delivery</span>
+                                            <span class="payment-desc">Pay via cash or UPI when delivered</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- RIGHT COLUMN: Sticky Order Summary & Place Order -->
+                <aside class="checkout-summary-column" aria-label="Order Summary">
+                    <div class="summary-card">
+                        <h3 class="summary-title">Order Summary</h3>
+
+                        <div class="summary-rows">
+                            <div class="summary-row">
+                                <span class="summary-label">Items Subtotal ({itemCount} {itemLabel}):</span>
+                                <span class="summary-value">₹{formattedSubtotal}</span>
+                            </div>
+
+                            <div class="summary-row">
+                                <span class="summary-label">
+                                    GST (18%):
+                                    <span class="tax-tag">Standard Rate</span>
+                                </span>
+                                <span class="summary-value">₹{formattedTax}</span>
+                            </div>
+
+                            <div class="summary-row">
+                                <span class="summary-label">Delivery / Shipping:</span>
+                                <template if:true={isFreeShipping}>
+                                    <span class="summary-value free-shipping-badge">FREE</span>
+                                </template>
+                                <template if:false={isFreeShipping}>
+                                    <span class="summary-value">₹{shippingCharge}</span>
+                                </template>
+                            </div>
+
+                            <template if:true={hasPromoDiscount}>
+                                <div class="summary-row discount-row">
+                                    <span class="summary-label">Coupon Discount ({appliedPromoCode}):</span>
+                                    <span class="summary-value">-₹{formattedPromoDiscount}</span>
+                                </div>
+                            </template>
+
+                            <div class="summary-divider"></div>
+
+                            <div class="summary-row total-row">
+                                <span class="total-label">Total Payable:</span>
+                                <span class="total-value">₹{formattedTotal}</span>
+                            </div>
+                        </div>
+
+                        <!-- Free Shipping Threshold Tip -->
+                        <template if:true={showShippingUpsell}>
+                            <div class="shipping-threshold-banner">
+                                Add ₹{amountNeededForFreeShipping} more to unlock <strong>FREE Delivery</strong>!
+                            </div>
+                        </template>
+
+                        <!-- Selected Address Summary in Sidebar -->
+                        <template if:true={selectedAddress}>
+                            <div class="selected-addr-preview">
+                                <span class="preview-label">Delivering to:</span>
+                                <p class="preview-text">
+                                    {selectedAddress.Street__c}, {selectedAddress.City__c} ({selectedAddress.Postal_Code__c})
+                                </p>
+                            </div>
+                        </template>
+
+                        <!-- Place Order Button -->
+                        <button
+                            class="btn-place-order"
+                            onclick={handlePlaceOrder}
+                            disabled={isProcessing}
+                            aria-busy={isProcessing}
+                        >
+                            <template if:true={isProcessing}>
+                                <div class="btn-spinner"></div>
+                                <span>Securing Order...</span>
+                            </template>
+                            <template if:false={isProcessing}>
+                                <span>Place Order • ₹{formattedTotal}</span>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="arrow-icon">
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                    <polyline points="12 5 19 12 12 19"></polyline>
+                                </svg>
+                            </template>
+                        </button>
+
+                        <!-- Trust & Guarantee Notice -->
+                        <div class="trust-notice-list">
+                            <div class="trust-item">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="trust-icon">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                </svg>
+                                <span>100% Safe & Secure Payments</span>
+                            </div>
+                            <div class="trust-item">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="trust-icon">
+                                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                    <polyline points="22,6 12,13 2,6"></polyline>
+                                </svg>
+                                <span>Instant Email & SMS Confirmation</span>
+                            </div>
+                            <div class="trust-item">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="trust-icon">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <polyline points="12 6 12 12 16 14"></polyline>
+                                </svg>
+                                <span>Estimated Dispatch: Within 24-48 Hours</span>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </template>
+    </div>
+</template>

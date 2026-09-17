@@ -1,6 +1,5 @@
-import { LightningElement, wire, track } from 'lwc';
+import { LightningElement, wire, track, api } from 'lwc';
 import { NavigationMixin, CurrentPageReference } from 'lightning/navigation';
-import { navigate, NavigationContext } from 'lwr/navigation';
 import getProducts from '@salesforce/apex/CommerceProductController.getProducts';
 import getMyAddresses from '@salesforce/apex/CommerceOrderController.getMyAddresses';
 import getDefaultShippingAddress from '@salesforce/apex/CommerceOrderController.getDefaultShippingAddress';
@@ -35,6 +34,9 @@ export default class NavigationBar extends NavigationMixin(LightningElement) {
     _cartCount = 0;
     _allProducts = [];
     _cartUpdateHandler = null;
+    _routeChangeHandler = null;
+    _authUpdateHandler = null;
+    @track _loggedInCustomer = null;
     
     @track _categoryDropdownActive = false;
     @track _hoveredCategory = '';
@@ -54,19 +56,255 @@ export default class NavigationBar extends NavigationMixin(LightningElement) {
     _addressesWireResult = null;
     _defaultAddressWireResult = null;
 
+    _isGuestOverride;
+
+    get isCustomerLoggedIn() {
+        return Boolean(this._loggedInCustomer && this._loggedInCustomer.isLoggedIn);
+    }
+
+    @api
     get isGuestUser() {
+        if (this.isCustomerLoggedIn) {
+            return false;
+        }
+        if (this._isGuestOverride !== undefined) {
+            return this._isGuestOverride;
+        }
         return isGuest;
     }
 
-    // ── Wire: resolve current page for future active-state use ───────
+    set isGuestUser(value) {
+        this._isGuestOverride = Boolean(value);
+    }
+
+    get customerGreeting() {
+        if (this._loggedInCustomer && this._loggedInCustomer.name) {
+            return `Hi, ${this._loggedInCustomer.name}`;
+        }
+        return 'My Account';
+    }
+
+    get customerDisplayName() {
+        return (this._loggedInCustomer && this._loggedInCustomer.name) || 'Account';
+    }
+
+    @track _currentView = 'home';
+    @track _selectedCategory = '';
+    @track _selectedProductId = '';
+
+    get isLoginView() {
+        return this._currentView === 'login';
+    }
+
+    get isProductDetailView() {
+        return this._currentView === 'product-detail';
+    }
+
+    get isHomeView() {
+        return !this._currentView || this._currentView === 'home';
+    }
+
+    get isAppliancesView() {
+        return this._currentView === 'appliances';
+    }
+
+    get isAudioView() {
+        return this._currentView === 'audio';
+    }
+
+    get isBeautyView() {
+        return this._currentView === 'beauty';
+    }
+
+    get isBooksView() {
+        return this._currentView === 'books';
+    }
+
+    get isClothingView() {
+        return this._currentView === 'clothing';
+    }
+
+    get isElectronicsView() {
+        return this._currentView === 'electronics';
+    }
+
+    get isFoodGroceryView() {
+        return this._currentView === 'food-grocery';
+    }
+
+    get isFurnitureView() {
+        return this._currentView === 'furniture';
+    }
+
+    get isHomeLivingView() {
+        return this._currentView === 'home-living';
+    }
+
+    get isKitchenDiningView() {
+        return this._currentView === 'kitchen-dining';
+    }
+
+    get isLaptopsComputersView() {
+        return this._currentView === 'laptops-computers';
+    }
+
+    get isMobilesView() {
+        return this._currentView === 'mobiles';
+    }
+
+    get isPersonalCareView() {
+        return this._currentView === 'personal-care';
+    }
+
+    get isSportsFitnessView() {
+        return this._currentView === 'sports-fitness';
+    }
+
+    get isToysGamesView() {
+        return this._currentView === 'toys-games';
+    }
+
+    get isTravelLuggageView() {
+        return this._currentView === 'travel-luggage';
+    }
+
+    get isWatchesAccessoriesView() {
+        return this._currentView === 'watches-accessories';
+    }
+
+    get isCartView() {
+        return this._currentView === 'cart';
+    }
+
+    get isCheckoutView() {
+        return this._currentView === 'checkout';
+    }
+
+    get isOrdersView() {
+        return this._currentView === 'orders';
+    }
+
+    get isHoveredCategoryAppliances() {
+        return this._hoveredCategory === 'Appliances';
+    }
+
+    get isHoveredCategoryAudio() {
+        return this._hoveredCategory === 'Audio';
+    }
+
+    get isHoveredCategoryBeauty() {
+        return this._hoveredCategory === 'Beauty';
+    }
+
+    get isHoveredCategoryBooks() {
+        return this._hoveredCategory === 'Books';
+    }
+
+    get isHoveredCategoryClothing() {
+        return this._hoveredCategory === 'Clothing';
+    }
+
+    get isHoveredCategoryElectronics() {
+        return this._hoveredCategory === 'Electronics';
+    }
+
+    get isHoveredCategoryFood() {
+        return this._hoveredCategory === 'Food & Grocery';
+    }
+
+    get isHoveredCategoryFurniture() {
+        return this._hoveredCategory === 'Furniture';
+    }
+
+    get isHoveredCategoryHomeLiving() {
+        return this._hoveredCategory === 'Home';
+    }
+
+    get isHoveredCategoryKitchenDining() {
+        return this._hoveredCategory === 'Kitchen & Dining';
+    }
+
+    get isHoveredCategoryLaptopsComputers() {
+        return this._hoveredCategory === 'Laptops & Computers';
+    }
+
+    get isHoveredCategoryMobiles() {
+        return this._hoveredCategory === 'Mobiles';
+    }
+
+    get isHoveredCategoryPersonalCare() {
+        return this._hoveredCategory === 'Personal Care';
+    }
+
+    get isHoveredCategorySportsFitness() {
+        return this._hoveredCategory === 'Sports & Fitness';
+    }
+
+    get isHoveredCategoryToysGames() {
+        return this._hoveredCategory === 'Toys & Games';
+    }
+
+    get isHoveredCategoryTravelLuggage() {
+        return this._hoveredCategory === 'Travel & Luggage';
+    }
+
+    get isHoveredCategoryWatchesAccessories() {
+        return this._hoveredCategory === 'Watches & Accessories';
+    }
+
+    // ── Wire: resolve current page for active-state use ──────────────
 
     @wire(CurrentPageReference)
-    handlePageRef() {}
+    handlePageRef(pageRef) {
+        if (pageRef && pageRef.attributes) {
+            const name = (pageRef.attributes.name || '').toLowerCase();
+            const url = (pageRef.attributes.url || '').toLowerCase();
+            const combined = `${name} ${url}`;
+
+            const detailMatch = combined.match(/\/(appliances|audio|beauty|books|clothing|electronics|food-grocery|furniture|home-living|home|kitchen-dining|laptops-computers|mobiles|personal-care|sports-fitness|toys-games|toys|travel-luggage|luggage|travel|watches-accessories|watches)\/products\/([^/?#\s]+)/i);
+            if (detailMatch) {
+                let cat = detailMatch[1].toLowerCase();
+                if (cat === 'home') cat = 'home-living';
+                else if (cat === 'toys') cat = 'toys-games';
+                else if (cat === 'luggage' || cat === 'travel') cat = 'travel-luggage';
+                else if (cat === 'watches') cat = 'watches-accessories';
+                this._selectedCategory = cat;
+                this._selectedProductId = detailMatch[2];
+                this._currentView = 'product-detail';
+                return;
+            }
+
+            if (combined.includes('login')) {
+                this._currentView = 'login';
+                return;
+            }
+
+            if (combined.includes('appliances')) this._currentView = 'appliances';
+            else if (combined.includes('audio')) this._currentView = 'audio';
+            else if (combined.includes('beauty')) this._currentView = 'beauty';
+            else if (combined.includes('books')) this._currentView = 'books';
+            else if (combined.includes('clothing')) this._currentView = 'clothing';
+            else if (combined.includes('electronics')) this._currentView = 'electronics';
+            else if (combined.includes('food-grocery') || combined.includes('food')) this._currentView = 'food-grocery';
+            else if (combined.includes('furniture')) this._currentView = 'furniture';
+            else if (combined.includes('home-living')) this._currentView = 'home-living';
+            else if (combined.includes('kitchen-dining')) this._currentView = 'kitchen-dining';
+            else if (combined.includes('laptops-computers')) this._currentView = 'laptops-computers';
+            else if (combined.includes('mobiles')) this._currentView = 'mobiles';
+            else if (combined.includes('personal-care')) this._currentView = 'personal-care';
+            else if (combined.includes('sports-fitness')) this._currentView = 'sports-fitness';
+            else if (combined.includes('toys-games') || combined.includes('toys')) this._currentView = 'toys-games';
+            else if (combined.includes('travel-luggage') || combined.includes('luggage')) this._currentView = 'travel-luggage';
+            else if (combined.includes('watches-accessories') || combined.includes('watches')) this._currentView = 'watches-accessories';
+            else if (combined.includes('checkout')) this._currentView = 'checkout';
+            else if (combined.includes('orders')) this._currentView = 'orders';
+            else if (combined.includes('cart')) this._currentView = 'cart';
+            else if (combined.includes('home')) this._currentView = 'home';
+        }
+    }
 
     // ── Wire: Navigation Context for LWR ─────────────────────────────
 
-    @wire(NavigationContext)
-    navContext;
 
     // ── Wire: Addresses ──────────────────────────────────────────────
 
@@ -107,6 +345,81 @@ export default class NavigationBar extends NavigationMixin(LightningElement) {
 
     connectedCallback() {
         this._refreshCartCount();
+
+        // ── Route Nesting & Browser History Synchronization ─────────
+        if (typeof window !== 'undefined') {
+            this._routeChangeHandler = () => {
+                const hash = (window.location.hash || '').toLowerCase();
+                const path = (window.location.pathname || '').toLowerCase();
+                const target = `${hash} ${path}`;
+
+                const detailMatch = target.match(/\/(appliances|audio|beauty|books|clothing|electronics|food-grocery|furniture|home-living|home|kitchen-dining|laptops-computers|mobiles|personal-care|sports-fitness|toys-games|toys|travel-luggage|luggage|travel|watches-accessories|watches)\/products\/([^/?#\s]+)/i);
+                if (detailMatch) {
+                    let cat = detailMatch[1].toLowerCase();
+                    if (cat === 'home') cat = 'home-living';
+                    else if (cat === 'toys') cat = 'toys-games';
+                    else if (cat === 'luggage' || cat === 'travel') cat = 'travel-luggage';
+                    else if (cat === 'watches') cat = 'watches-accessories';
+                    this._selectedCategory = cat;
+                    this._selectedProductId = detailMatch[2];
+                    this._currentView = 'product-detail';
+                    return;
+                }
+
+                if (target.includes('/login') || hash === '#login' || hash === '#/login') {
+                    this._currentView = 'login';
+                    return;
+                }
+
+                if (target.includes('/appliances')) {
+                    this._currentView = 'appliances';
+                } else if (target.includes('/audio')) {
+                    this._currentView = 'audio';
+                } else if (target.includes('/beauty')) {
+                    this._currentView = 'beauty';
+                } else if (target.includes('/books')) {
+                    this._currentView = 'books';
+                } else if (target.includes('/clothing')) {
+                    this._currentView = 'clothing';
+                } else if (target.includes('/electronics')) {
+                    this._currentView = 'electronics';
+                } else if (target.includes('/food-grocery') || target.includes('/food')) {
+                    this._currentView = 'food-grocery';
+                } else if (target.includes('/furniture')) {
+                    this._currentView = 'furniture';
+                } else if (target.includes('/home-living')) {
+                    this._currentView = 'home-living';
+                } else if (target.includes('/kitchen-dining')) {
+                    this._currentView = 'kitchen-dining';
+                } else if (target.includes('/laptops-computers')) {
+                    this._currentView = 'laptops-computers';
+                } else if (target.includes('/mobiles')) {
+                    this._currentView = 'mobiles';
+                } else if (target.includes('/personal-care')) {
+                    this._currentView = 'personal-care';
+                } else if (target.includes('/sports-fitness')) {
+                    this._currentView = 'sports-fitness';
+                } else if (target.includes('/toys-games') || target.includes('/toys')) {
+                    this._currentView = 'toys-games';
+                } else if (target.includes('/travel-luggage') || target.includes('/luggage')) {
+                    this._currentView = 'travel-luggage';
+                } else if (target.includes('/watches-accessories') || target.includes('/watches')) {
+                    this._currentView = 'watches-accessories';
+                } else if (target.includes('/checkout')) {
+                    this._currentView = 'checkout';
+                } else if (target.includes('/orders') || hash === '#orders' || hash === '#/orders') {
+                    this._currentView = 'orders';
+                } else if (target.includes('/cart')) {
+                    this._currentView = 'cart';
+                } else if (target.includes('/home') || hash === '' || hash === '#/' || hash === '#') {
+                    this._currentView = 'home';
+                }
+            };
+            this._routeChangeHandler();
+            window.addEventListener('popstate', this._routeChangeHandler);
+            window.addEventListener('hashchange', this._routeChangeHandler);
+        }
+
         // LWS-compatible cart sync: listen for a custom event dispatched by the
         // cart component on the same page. 'window.storage' is blocked by LWS;
         // document.addEventListener for custom events is permitted.
@@ -118,6 +431,17 @@ export default class NavigationBar extends NavigationMixin(LightningElement) {
             this._cartCount = count;
         };
         document.addEventListener('commercehubcartupdate', this._cartUpdateHandler);
+
+        // Customer Authentication sync
+        this._initCustomerAuth();
+        this._authUpdateHandler = (event) => {
+            if (event && event.detail && event.detail.customer) {
+                this._loggedInCustomer = event.detail.customer;
+            } else if (event && event.detail && event.detail.isLoggedIn === false) {
+                this._loggedInCustomer = null;
+            }
+        };
+        document.addEventListener('commercehubauthupdate', this._authUpdateHandler);
     }
 
     renderedCallback() {
@@ -147,6 +471,34 @@ export default class NavigationBar extends NavigationMixin(LightningElement) {
                 this._cartUpdateHandler
             );
             this._cartUpdateHandler = null;
+        }
+        if (this._authUpdateHandler) {
+            document.removeEventListener(
+                'commercehubauthupdate',
+                this._authUpdateHandler
+            );
+            this._authUpdateHandler = null;
+        }
+        if (this._routeChangeHandler && typeof window !== 'undefined') {
+            window.removeEventListener('popstate', this._routeChangeHandler);
+            window.removeEventListener('hashchange', this._routeChangeHandler);
+            this._routeChangeHandler = null;
+        }
+    }
+
+    _initCustomerAuth() {
+        try {
+            if (typeof window !== 'undefined' && window.localStorage) {
+                const stored = window.localStorage.getItem('commerceHubCustomer');
+                if (stored) {
+                    const parsed = JSON.parse(stored);
+                    if (parsed && parsed.isLoggedIn) {
+                        this._loggedInCustomer = parsed;
+                    }
+                }
+            }
+        } catch {
+            this._loggedInCustomer = null;
         }
     }
 
@@ -191,7 +543,7 @@ export default class NavigationBar extends NavigationMixin(LightningElement) {
     }
 
     handleCategoryCardClick(event) {
-        if (typeof window !== 'undefined') {
+        if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
         this.handleCategoryClick(event);
@@ -576,8 +928,13 @@ export default class NavigationBar extends NavigationMixin(LightningElement) {
         if (this._dropdownTimeout) {
             clearTimeout(this._dropdownTimeout);
         }
-        const targetEl = event.currentTarget || event.target;
-        const category = targetEl && targetEl.dataset ? targetEl.dataset.category : null;
+        const btn =
+            (event && event.currentTarget && event.currentTarget.dataset && event.currentTarget.dataset.category)
+                ? event.currentTarget
+                : (event && event.target && event.target.closest)
+                    ? event.target.closest('[data-category]')
+                    : (event && event.currentTarget) || (event && event.target);
+        const category = btn && btn.dataset ? btn.dataset.category : null;
         if (category && this._hoveredCategory !== category) {
             this._hoveredCategory = category;
             this._showAllProducts = false;
@@ -729,12 +1086,21 @@ export default class NavigationBar extends NavigationMixin(LightningElement) {
     handleResultClick(event) {
         const productId = event.currentTarget.dataset.id;
         this._clearSearch();
-        // Page name 'Product_Detail' must exist in Experience Builder. See Phase report.
-        this[NavigationMixin.Navigate]({
-            type: 'comm__namedPage',
-            attributes: { name: 'Product_Detail' },
-            state: { productId },
-        });
+        const isLocalDev = typeof window !== 'undefined' && 
+            window.location && 
+            window.location.href && 
+            window.location.href.includes('localdev-preview');
+        if (!isLocalDev) {
+            try {
+                this[NavigationMixin.Navigate]({
+                    type: 'comm__namedPage',
+                    attributes: { name: 'Product_Detail' },
+                    state: { productId },
+                });
+            } catch (err) {
+                console.warn('[Commerce Hub navigationBar] Product navigation error:', err);
+            }
+        }
     }
 
     _clearSearch() {
@@ -747,37 +1113,353 @@ export default class NavigationBar extends NavigationMixin(LightningElement) {
 
     // ── Navigation ───────────────────────────────────────────────────
 
-    handleBrandClick() {
-        this[NavigationMixin.Navigate]({
-            type: 'comm__namedPage',
-            attributes: { name: 'Home' },
-        });
-    }
+    navigateToCategoryRoute(categoryRoute, urlSlug) {
+        this.closeCategoryDropdown();
+        this._currentView = categoryRoute;
 
-    handleLoginClick() {
-        // Use LWR-native navigation to resolve LWR4002 context error
-        if (this.navContext) {
-            navigate(this.navContext, {
-                type: 'comm__loginPage',
-                attributes: { actionName: 'login' }
-            });
+        if (typeof window !== 'undefined') {
+            if (typeof window.scrollTo === 'function') {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+            if (window.history && window.history.pushState) {
+                try {
+                    const currentUrl = new URL(window.location.href);
+                    currentUrl.hash = urlSlug;
+                    window.history.pushState({ route: categoryRoute }, '', currentUrl.toString());
+                } catch {
+                    window.location.hash = urlSlug;
+                }
+            }
+        }
+
+        const isLocalDev = typeof window !== 'undefined' && 
+            window.location && 
+            window.location.href && 
+            window.location.href.includes('localdev-preview');
+
+        // In production Experience Cloud runtime, trigger LWR navigation
+        if (!isLocalDev) {
+            try {
+                if (this.navContext) {
+                    this[NavigationMixin.Navigate]({
+                        type: 'standard__webPage',
+                        attributes: { url: urlSlug }
+                    });
+                } else {
+                    this[NavigationMixin.Navigate]({
+                        type: 'standard__webPage',
+                        attributes: { url: urlSlug }
+                    });
+                }
+            } catch (err) {
+                console.warn(`[Commerce Hub navigationBar] Navigation to ${urlSlug}:`, err);
+            }
         }
     }
 
+    @api
+    navigateToProductDetail(category, productId) {
+        this.closeCategoryDropdown();
+        this._selectedCategory = category;
+        this._selectedProductId = productId;
+        this._currentView = 'product-detail';
+
+        const urlSlug = `/${category}/products/${productId}`;
+        if (typeof window !== 'undefined') {
+            if (typeof window.scrollTo === 'function') {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+            if (window.history && window.history.pushState) {
+                try {
+                    const currentUrl = new URL(window.location.href);
+                    currentUrl.hash = urlSlug;
+                    window.history.pushState({ route: 'product-detail', category, productId }, '', currentUrl.toString());
+                } catch {
+                    window.location.hash = urlSlug;
+                }
+            }
+        }
+
+        const isLocalDev = typeof window !== 'undefined' && 
+            window.location && 
+            window.location.href && 
+            window.location.href.includes('localdev-preview');
+
+        if (!isLocalDev) {
+            try {
+                this[NavigationMixin.Navigate]({
+                    type: 'standard__webPage',
+                    attributes: { url: urlSlug }
+                });
+            } catch (err) {
+                console.warn(`[Commerce Hub navigationBar] Product navigation to ${urlSlug}:`, err);
+            }
+        }
+    }
+
+    handleProductSelect(event) {
+        if (event && event.detail) {
+            const { productId, category } = event.detail;
+            if (productId && category) {
+                this.navigateToProductDetail(category, productId);
+            }
+        }
+    }
+
+    handleBackToCategory(event) {
+        let cat = (event && event.detail && event.detail.category) || this._selectedCategory;
+        if (cat === 'home') {
+            cat = 'home-living';
+        } else if (cat === 'toys') {
+            cat = 'toys-games';
+        } else if (cat === 'luggage' || cat === 'travel') {
+            cat = 'travel-luggage';
+        } else if (cat === 'watches') {
+            cat = 'watches-accessories';
+        }
+        if (cat) {
+            this.navigateToCategoryRoute(cat, `/${cat}`);
+        } else {
+            this.navigateToHome();
+        }
+    }
+
+    @api
+    navigateToAppliances() {
+        this.navigateToCategoryRoute('appliances', '/appliances');
+    }
+
+    @api
+    navigateToAudio() {
+        this.navigateToCategoryRoute('audio', '/audio');
+    }
+
+    @api
+    navigateToBeauty() {
+        this.navigateToCategoryRoute('beauty', '/beauty');
+    }
+
+    @api
+    navigateToBooks() {
+        this.navigateToCategoryRoute('books', '/books');
+    }
+
+    @api
+    navigateToClothing() {
+        this.navigateToCategoryRoute('clothing', '/clothing');
+    }
+
+    @api
+    navigateToElectronics() {
+        this.navigateToCategoryRoute('electronics', '/electronics');
+    }
+
+    @api
+    navigateToFoodGrocery() {
+        this.navigateToCategoryRoute('food-grocery', '/food-grocery');
+    }
+
+    @api
+    navigateToFurniture() {
+        this.navigateToCategoryRoute('furniture', '/furniture');
+    }
+
+    @api
+    navigateToHomeLiving() {
+        this.navigateToCategoryRoute('home-living', '/home-living');
+    }
+
+    @api
+    navigateToKitchenDining() {
+        this.navigateToCategoryRoute('kitchen-dining', '/kitchen-dining');
+    }
+
+    @api
+    navigateToLaptopsComputers() {
+        this.navigateToCategoryRoute('laptops-computers', '/laptops-computers');
+    }
+
+    @api
+    navigateToMobiles() {
+        this.navigateToCategoryRoute('mobiles', '/mobiles');
+    }
+
+    @api
+    navigateToPersonalCare() {
+        this.navigateToCategoryRoute('personal-care', '/personal-care');
+    }
+
+    @api
+    navigateToSportsFitness() {
+        this.navigateToCategoryRoute('sports-fitness', '/sports-fitness');
+    }
+
+    @api
+    navigateToToysGames() {
+        this.navigateToCategoryRoute('toys-games', '/toys-games');
+    }
+
+    @api
+    navigateToTravelLuggage() {
+        this.navigateToCategoryRoute('travel-luggage', '/travel-luggage');
+    }
+
+    @api
+    navigateToWatchesAccessories() {
+        this.navigateToCategoryRoute('watches-accessories', '/watches-accessories');
+    }
+
+    @api
+    handleBrandClick() {
+        this._currentView = 'home';
+
+        if (typeof window !== 'undefined') {
+            if (typeof window.scrollTo === 'function') {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+            if (window.history && window.history.pushState) {
+                try {
+                    const currentUrl = new URL(window.location.href);
+                    currentUrl.hash = '/home';
+                    window.history.pushState({ route: 'home' }, '', currentUrl.toString());
+                } catch {
+                    window.location.hash = '/home';
+                }
+            }
+        }
+
+        const isLocalDev = typeof window !== 'undefined' && 
+            window.location && 
+            window.location.href && 
+            window.location.href.includes('localdev-preview');
+
+        if (!isLocalDev) {
+            try {
+                this[NavigationMixin.Navigate]({
+                    type: 'comm__namedPage',
+                    attributes: { name: 'Home' },
+                });
+            } catch (err) {
+                console.warn('[Commerce Hub navigationBar] Home navigation error:', err);
+            }
+        }
+    }
+
+    @api
+    navigateToLogin() {
+        this.navigateToCategoryRoute('login', '/login');
+    }
+
+    handleLoginClick() {
+        this.navigateToLogin();
+    }
+
+    handleLoginSuccess(event) {
+        if (event && event.detail) {
+            this._loggedInCustomer = event.detail;
+        }
+    }
+
+    handleLogout(event) {
+        if (event && event.preventDefault) event.preventDefault();
+        try {
+            if (typeof window !== 'undefined' && window.localStorage) {
+                window.localStorage.removeItem('commerceHubCustomer');
+            }
+        } catch (e) {
+            console.warn('[Commerce Hub navigationBar] Logout error:', e);
+        }
+        this._loggedInCustomer = null;
+        if (typeof document !== 'undefined') {
+            document.dispatchEvent(
+                new CustomEvent('commercehubauthupdate', {
+                    detail: { isLoggedIn: false, customer: null }
+                })
+            );
+        }
+        this.handleBrandClick();
+    }
+
+    @api
+    navigateToCart() {
+        this._currentView = 'cart';
+        if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        if (typeof window !== 'undefined' && window.location) {
+            try {
+                window.location.hash = '/cart';
+            } catch {
+                // ignore
+            }
+        }
+    }
+
+    @api
+    navigateToCheckout() {
+        this.navigateToCategoryRoute('checkout', '/checkout');
+    }
+
+    @api
+    navigateToOrders() {
+        this._currentView = 'orders';
+        if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        if (typeof window !== 'undefined' && window.location) {
+            try {
+                window.location.hash = '/orders';
+            } catch {
+                // ignore
+            }
+        }
+    }
+
+    handleOrdersClick() {
+        this.navigateToOrders();
+    }
+
     handleCartClick() {
-        this[NavigationMixin.Navigate]({
-            type: 'comm__namedPage',
-            attributes: { name: 'Cart' },
-        });
+        this.navigateToCart();
     }
 
     handleCategoryClick(event) {
         if (event && event.preventDefault) {
             event.preventDefault();
         }
-        const targetEl = (event && event.currentTarget) || (event && event.target);
-        const category = targetEl && targetEl.dataset ? targetEl.dataset.category : null;
+        const btn =
+            (event && event.currentTarget && event.currentTarget.dataset && event.currentTarget.dataset.category)
+                ? event.currentTarget
+                : (event && event.target && event.target.closest)
+                    ? event.target.closest('[data-category]')
+                    : (event && event.currentTarget) || (event && event.target);
+        const category = btn && btn.dataset ? btn.dataset.category : null;
+
+        const categoryRoutingMap = {
+            'Appliances': () => this.navigateToAppliances(),
+            'Audio': () => this.navigateToAudio(),
+            'Beauty': () => this.navigateToBeauty(),
+            'Books': () => this.navigateToBooks(),
+            'Clothing': () => this.navigateToClothing(),
+            'Electronics': () => this.navigateToElectronics(),
+            'Food & Grocery': () => this.navigateToFoodGrocery(),
+            'Furniture': () => this.navigateToFurniture(),
+            'Home': () => this.navigateToHomeLiving(),
+            'Kitchen & Dining': () => this.navigateToKitchenDining(),
+            'Laptops & Computers': () => this.navigateToLaptopsComputers(),
+            'Mobiles': () => this.navigateToMobiles(),
+            'Personal Care': () => this.navigateToPersonalCare(),
+            'Sports & Fitness': () => this.navigateToSportsFitness(),
+            'Toys & Games': () => this.navigateToToysGames(),
+            'Travel & Luggage': () => this.navigateToTravelLuggage(),
+            'Watches & Accessories': () => this.navigateToWatchesAccessories()
+        };
         
+        if (category && categoryRoutingMap[category]) {
+            categoryRoutingMap[category]();
+            return;
+        }
+
         // Touch toggle support: if tapping already open dropdown, close it.
         // Otherwise, open it (and view all link can be used to navigate).
         if (category && this._hoveredCategory === category && this._categoryDropdownActive) {
@@ -842,14 +1524,14 @@ export default class NavigationBar extends NavigationMixin(LightningElement) {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 () => {
-                    alert('Location feature accessed successfully. Existing saved addresses remain the delivery source of truth.');
+                    console.warn('Location feature accessed successfully. Existing saved addresses remain the delivery source of truth.');
                 },
                 () => {
-                    alert('Location access denied or unavailable.');
+                    console.warn('Location access denied or unavailable.');
                 }
             );
         } else {
-            alert('Geolocation is not supported by this browser.');
+            console.warn('Geolocation is not supported by this browser.');
         }
     }
 
@@ -917,7 +1599,7 @@ export default class NavigationBar extends NavigationMixin(LightningElement) {
             })
             .catch(error => {
                 console.error('Error saving address:', error);
-                alert('Error saving address. Please try again.');
+                console.warn('Error saving address. Please try again.');
             });
     }
 }
