@@ -261,12 +261,16 @@ export default class NavigationBar extends NavigationMixin(LightningElement) {
             const url = (pageRef.attributes.url || '').toLowerCase();
             const combined = `${name} ${url}`;
 
-            const detailMatch = combined.match(/\/(appliances|audio|beauty|books|clothing|electronics|food-grocery|furniture|home-living|home|kitchen-dining|laptops-computers|mobiles|personal-care|sports-fitness|toys-games|toys|travel-luggage|luggage|travel|watches-accessories|watches)\/products\/([^/?#\s]+)/i);
+            const detailMatch = combined.match(/\/(appliances|audio|beauty|books|clothing|electronics|food-grocery|furniture|home-living|homeliving|home|kitchen-dining|kitchendining|kitchen|laptops-computers|laptopscomputers|laptops|mobiles|personal-care|personalcare|personal|sports-fitness|sportsfitness|sports|fitness|toys-games|toys|travel-luggage|travelluggage|luggage|travel|watches-accessories|watches)\/products\/([^/?#\s]+)/i);
             if (detailMatch) {
                 let cat = detailMatch[1].toLowerCase();
-                if (cat === 'home') cat = 'home-living';
+                if (cat === 'home' || cat === 'homeliving') cat = 'home-living';
+                else if (cat === 'kitchen' || cat === 'kitchendining') cat = 'kitchen-dining';
+                else if (cat === 'laptops' || cat === 'laptopscomputers') cat = 'laptops-computers';
+                else if (cat === 'personal' || cat === 'personalcare') cat = 'personal-care';
+                else if (cat === 'sports' || cat === 'fitness' || cat === 'sportsfitness') cat = 'sports-fitness';
                 else if (cat === 'toys') cat = 'toys-games';
-                else if (cat === 'luggage' || cat === 'travel') cat = 'travel-luggage';
+                else if (cat === 'luggage' || cat === 'travel' || cat === 'travelluggage') cat = 'travel-luggage';
                 else if (cat === 'watches') cat = 'watches-accessories';
                 this._selectedCategory = cat;
                 this._selectedProductId = detailMatch[2];
@@ -287,14 +291,14 @@ export default class NavigationBar extends NavigationMixin(LightningElement) {
             else if (combined.includes('electronics')) this._currentView = 'electronics';
             else if (combined.includes('food-grocery') || combined.includes('food')) this._currentView = 'food-grocery';
             else if (combined.includes('furniture')) this._currentView = 'furniture';
-            else if (combined.includes('home-living')) this._currentView = 'home-living';
-            else if (combined.includes('kitchen-dining')) this._currentView = 'kitchen-dining';
-            else if (combined.includes('laptops-computers')) this._currentView = 'laptops-computers';
+            else if (combined.includes('home-living') || combined.includes('homeliving') || combined.includes('home_living') || combined.includes('home living')) this._currentView = 'home-living';
+            else if (combined.includes('kitchen-dining') || combined.includes('kitchendining') || combined.includes('kitchen_dining') || combined.includes('kitchen and dining')) this._currentView = 'kitchen-dining';
+            else if (combined.includes('laptops-computers') || combined.includes('laptopscomputers') || combined.includes('laptops_computers') || combined.includes('laptops and computers')) this._currentView = 'laptops-computers';
             else if (combined.includes('mobiles')) this._currentView = 'mobiles';
-            else if (combined.includes('personal-care')) this._currentView = 'personal-care';
-            else if (combined.includes('sports-fitness')) this._currentView = 'sports-fitness';
+            else if (combined.includes('personal-care') || combined.includes('personalcare') || combined.includes('personal_care') || combined.includes('personal care')) this._currentView = 'personal-care';
+            else if (combined.includes('sports-fitness') || combined.includes('sportsfitness') || combined.includes('sports_fitness') || combined.includes('sports and fitness')) this._currentView = 'sports-fitness';
             else if (combined.includes('toys-games') || combined.includes('toys')) this._currentView = 'toys-games';
-            else if (combined.includes('travel-luggage') || combined.includes('luggage')) this._currentView = 'travel-luggage';
+            else if (combined.includes('travel-luggage') || combined.includes('travelluggage') || combined.includes('travel_luggage') || combined.includes('travel and luggage') || combined.includes('luggage')) this._currentView = 'travel-luggage';
             else if (combined.includes('watches-accessories') || combined.includes('watches')) this._currentView = 'watches-accessories';
             else if (combined.includes('checkout')) this._currentView = 'checkout';
             else if (combined.includes('orders')) this._currentView = 'orders';
@@ -353,12 +357,16 @@ export default class NavigationBar extends NavigationMixin(LightningElement) {
                 const path = (window.location.pathname || '').toLowerCase();
                 const target = `${hash} ${path}`;
 
-                const detailMatch = target.match(/\/(appliances|audio|beauty|books|clothing|electronics|food-grocery|furniture|home-living|home|kitchen-dining|laptops-computers|mobiles|personal-care|sports-fitness|toys-games|toys|travel-luggage|luggage|travel|watches-accessories|watches)\/products\/([^/?#\s]+)/i);
+                const detailMatch = target.match(/\/(appliances|audio|beauty|books|clothing|electronics|food-grocery|furniture|home-living|homeliving|home|kitchen-dining|kitchendining|kitchen|laptops-computers|laptopscomputers|laptops|mobiles|personal-care|personalcare|personal|sports-fitness|sportsfitness|sports|fitness|toys-games|toys|travel-luggage|travelluggage|luggage|travel|watches-accessories|watches)\/products\/([^/?#\s]+)/i);
                 if (detailMatch) {
                     let cat = detailMatch[1].toLowerCase();
-                    if (cat === 'home') cat = 'home-living';
+                    if (cat === 'home' || cat === 'homeliving') cat = 'home-living';
+                    else if (cat === 'kitchen' || cat === 'kitchendining') cat = 'kitchen-dining';
+                    else if (cat === 'laptops' || cat === 'laptopscomputers') cat = 'laptops-computers';
+                    else if (cat === 'personal' || cat === 'personalcare') cat = 'personal-care';
+                    else if (cat === 'sports' || cat === 'fitness' || cat === 'sportsfitness') cat = 'sports-fitness';
                     else if (cat === 'toys') cat = 'toys-games';
-                    else if (cat === 'luggage' || cat === 'travel') cat = 'travel-luggage';
+                    else if (cat === 'luggage' || cat === 'travel' || cat === 'travelluggage') cat = 'travel-luggage';
                     else if (cat === 'watches') cat = 'watches-accessories';
                     this._selectedCategory = cat;
                     this._selectedProductId = detailMatch[2];
@@ -387,21 +395,21 @@ export default class NavigationBar extends NavigationMixin(LightningElement) {
                     this._currentView = 'food-grocery';
                 } else if (target.includes('/furniture')) {
                     this._currentView = 'furniture';
-                } else if (target.includes('/home-living')) {
+                } else if (target.includes('/home-living') || target.includes('/homeliving') || target.includes('homeliving')) {
                     this._currentView = 'home-living';
-                } else if (target.includes('/kitchen-dining')) {
+                } else if (target.includes('/kitchen-dining') || target.includes('/kitchendining') || target.includes('kitchendining')) {
                     this._currentView = 'kitchen-dining';
-                } else if (target.includes('/laptops-computers')) {
+                } else if (target.includes('/laptops-computers') || target.includes('/laptopscomputers') || target.includes('laptopscomputers')) {
                     this._currentView = 'laptops-computers';
                 } else if (target.includes('/mobiles')) {
                     this._currentView = 'mobiles';
-                } else if (target.includes('/personal-care')) {
+                } else if (target.includes('/personal-care') || target.includes('/personalcare') || target.includes('personalcare')) {
                     this._currentView = 'personal-care';
-                } else if (target.includes('/sports-fitness')) {
+                } else if (target.includes('/sports-fitness') || target.includes('/sportsfitness') || target.includes('sportsfitness')) {
                     this._currentView = 'sports-fitness';
                 } else if (target.includes('/toys-games') || target.includes('/toys')) {
                     this._currentView = 'toys-games';
-                } else if (target.includes('/travel-luggage') || target.includes('/luggage')) {
+                } else if (target.includes('/travel-luggage') || target.includes('/travelluggage') || target.includes('travelluggage') || target.includes('/luggage')) {
                     this._currentView = 'travel-luggage';
                 } else if (target.includes('/watches-accessories') || target.includes('/watches')) {
                     this._currentView = 'watches-accessories';
@@ -1208,20 +1216,47 @@ export default class NavigationBar extends NavigationMixin(LightningElement) {
 
     handleBackToCategory(event) {
         let cat = (event && event.detail && event.detail.category) || this._selectedCategory;
-        if (cat === 'home') {
+        if (cat === 'home' || cat === 'homeliving') {
             cat = 'home-living';
+        } else if (cat === 'kitchen' || cat === 'kitchendining') {
+            cat = 'kitchen-dining';
+        } else if (cat === 'laptops' || cat === 'laptopscomputers') {
+            cat = 'laptops-computers';
+        } else if (cat === 'personal' || cat === 'personalcare') {
+            cat = 'personal-care';
+        } else if (cat === 'sports' || cat === 'fitness' || cat === 'sportsfitness') {
+            cat = 'sports-fitness';
         } else if (cat === 'toys') {
             cat = 'toys-games';
-        } else if (cat === 'luggage' || cat === 'travel') {
+        } else if (cat === 'luggage' || cat === 'travel' || cat === 'travelluggage') {
             cat = 'travel-luggage';
         } else if (cat === 'watches') {
             cat = 'watches-accessories';
         }
         if (cat) {
-            this.navigateToCategoryRoute(cat, `/${cat}`);
+            let urlSlug = `/${cat}`;
+            if (cat === 'home-living') {
+                urlSlug = '/homeliving';
+            } else if (cat === 'kitchen-dining') {
+                urlSlug = '/kitchendining';
+            } else if (cat === 'laptops-computers') {
+                urlSlug = '/laptopscomputers';
+            } else if (cat === 'personal-care') {
+                urlSlug = '/personalcare';
+            } else if (cat === 'sports-fitness') {
+                urlSlug = '/sportsfitness';
+            } else if (cat === 'travel-luggage') {
+                urlSlug = '/travelluggage';
+            }
+            this.navigateToCategoryRoute(cat, urlSlug);
         } else {
             this.navigateToHome();
         }
+    }
+
+    @api
+    navigateToHome() {
+        this.handleBrandClick();
     }
 
     @api
@@ -1266,17 +1301,17 @@ export default class NavigationBar extends NavigationMixin(LightningElement) {
 
     @api
     navigateToHomeLiving() {
-        this.navigateToCategoryRoute('home-living', '/home-living');
+        this.navigateToCategoryRoute('home-living', '/homeliving');
     }
 
     @api
     navigateToKitchenDining() {
-        this.navigateToCategoryRoute('kitchen-dining', '/kitchen-dining');
+        this.navigateToCategoryRoute('kitchen-dining', '/kitchendining');
     }
 
     @api
     navigateToLaptopsComputers() {
-        this.navigateToCategoryRoute('laptops-computers', '/laptops-computers');
+        this.navigateToCategoryRoute('laptops-computers', '/laptopscomputers');
     }
 
     @api
@@ -1286,12 +1321,12 @@ export default class NavigationBar extends NavigationMixin(LightningElement) {
 
     @api
     navigateToPersonalCare() {
-        this.navigateToCategoryRoute('personal-care', '/personal-care');
+        this.navigateToCategoryRoute('personal-care', '/personalcare');
     }
 
     @api
     navigateToSportsFitness() {
-        this.navigateToCategoryRoute('sports-fitness', '/sports-fitness');
+        this.navigateToCategoryRoute('sports-fitness', '/sportsfitness');
     }
 
     @api
@@ -1301,7 +1336,7 @@ export default class NavigationBar extends NavigationMixin(LightningElement) {
 
     @api
     navigateToTravelLuggage() {
-        this.navigateToCategoryRoute('travel-luggage', '/travel-luggage');
+        this.navigateToCategoryRoute('travel-luggage', '/travelluggage');
     }
 
     @api
@@ -1445,13 +1480,30 @@ export default class NavigationBar extends NavigationMixin(LightningElement) {
             'Food & Grocery': () => this.navigateToFoodGrocery(),
             'Furniture': () => this.navigateToFurniture(),
             'Home': () => this.navigateToHomeLiving(),
+            'Home Living': () => this.navigateToHomeLiving(),
+            'Home & Living': () => this.navigateToHomeLiving(),
             'Kitchen & Dining': () => this.navigateToKitchenDining(),
+            'Kitchen and Dining': () => this.navigateToKitchenDining(),
+            'Kitchen': () => this.navigateToKitchenDining(),
+            'KitchenDining': () => this.navigateToKitchenDining(),
             'Laptops & Computers': () => this.navigateToLaptopsComputers(),
+            'Laptops and Computers': () => this.navigateToLaptopsComputers(),
+            'Laptops': () => this.navigateToLaptopsComputers(),
+            'LaptopsComputers': () => this.navigateToLaptopsComputers(),
             'Mobiles': () => this.navigateToMobiles(),
             'Personal Care': () => this.navigateToPersonalCare(),
+            'PersonalCare': () => this.navigateToPersonalCare(),
             'Sports & Fitness': () => this.navigateToSportsFitness(),
+            'Sports and Fitness': () => this.navigateToSportsFitness(),
+            'Sports': () => this.navigateToSportsFitness(),
+            'Fitness': () => this.navigateToSportsFitness(),
+            'SportsFitness': () => this.navigateToSportsFitness(),
             'Toys & Games': () => this.navigateToToysGames(),
             'Travel & Luggage': () => this.navigateToTravelLuggage(),
+            'Travel and Luggage': () => this.navigateToTravelLuggage(),
+            'Travel': () => this.navigateToTravelLuggage(),
+            'Luggage': () => this.navigateToTravelLuggage(),
+            'TravelLuggage': () => this.navigateToTravelLuggage(),
             'Watches & Accessories': () => this.navigateToWatchesAccessories()
         };
         
