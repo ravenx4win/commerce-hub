@@ -1,0 +1,56 @@
+#  CommerceHub
+
+CommerceHub is a Salesforce-based e-commerce platform developed as a final Salesforce development project. It combines Salesforce backend development with a customer-facing Lightning Web Component (LWC) interface to provide a complete online shopping experience.
+
+##  Overview
+
+The project uses Salesforce as the core platform for managing products, customers, addresses, carts, orders, inventory, and business logic.
+
+The application demonstrates practical implementation of Salesforce development concepts including:
+
+* **Apex** for backend business logic
+* **SOQL** for querying Salesforce data
+* **Lightning Web Components (LWC)** for the user interface
+* **Salesforce Flows** for automation
+* **Custom Objects & Fields** for the e-commerce data model
+* **Experience Cloud** for the customer-facing storefront
+* **Validation Rules & Security** for maintaining data integrity
+* **Apex Classes, Triggers and Asynchronous Processing** where required
+
+##  Key Features:-
+
+*  Product browsing and product details
+*  Product search and filtering
+*  Shopping cart management
+*  Inventory and stock validation
+*  Customer address management
+*  Checkout and order processing
+*  Order history and order details
+*  Customer account functionality
+*  Salesforce Flow-based automation
+*  Salesforce security and access control
+*  Responsive customer-facing interface
+
+##  Tech Stack:-
+
+**Salesforce**
+
+* Apex
+* SOQL
+* Lightning Web Components (LWC)
+* Salesforce Flow
+* Experience Cloud
+* Custom Objects & Fields
+* Apex Triggers
+* Permission Sets & Security
+
+**Development Tools**
+
+* Salesforce CLI
+* Visual Studio Code
+* Git & GitHub
+* Salesforce DX
+
+##  Project Objective:-
+
+The objective of CommerceHub is to demonstrate how Salesforce can be used to build a functional e-commerce application while applying real-world Salesforce administration and development concepts across the complete application lifecycle.
